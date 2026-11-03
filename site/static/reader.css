@@ -1,0 +1,252 @@
+/* Online reader for TeX4ht output: a printed-book page in the work's own typeface.
+   Class names (indent, noindent, sectionHead, likesectionHead, marginpar, verse …)
+   are TeX4ht's; sidenote, quellseite and unsicher come from library/typesetting.py
+   and typesetter/oll.cfg. */
+
+@font-face { font-family: "OLL Libertinus"; src: url("fonts/libertinus-regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "OLL Libertinus"; src: url("fonts/libertinus-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "OLL Libertinus"; src: url("fonts/libertinus-semibold.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "OLL Libertinus"; src: url("fonts/libertinus-bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "OLL Libertinus"; src: url("fonts/libertinus-bolditalic.woff2") format("woff2"); font-weight: 700; font-style: italic; font-display: swap; }
+@font-face { font-family: "OLL Pagella"; src: url("fonts/pagella-regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "OLL Pagella"; src: url("fonts/pagella-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "OLL Pagella"; src: url("fonts/pagella-bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "OLL Pagella"; src: url("fonts/pagella-bolditalic.woff2") format("woff2"); font-weight: 700; font-style: italic; font-display: swap; }
+@font-face { font-family: "OLL Latin Modern"; src: url("fonts/lmodern-regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "OLL Latin Modern"; src: url("fonts/lmodern-italic.woff2") format("woff2"); font-weight: 400; font-style: italic; font-display: swap; }
+@font-face { font-family: "OLL Latin Modern"; src: url("fonts/lmodern-bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "OLL Latin Modern"; src: url("fonts/lmodern-bolditalic.woff2") format("woff2"); font-weight: 700; font-style: italic; font-display: swap; }
+
+.reading {
+  --paper: #fffdf7;
+  --text: #1f1c18;
+  --soft: #6f665a;
+  --faint: #b5ab9c;
+  --rule: #e3dccf;
+  --rubric: #9b2c1f;
+  --measure: 33em;
+  --outer: 0em;
+  --inner: 3.2em;
+  background: #efebe3;
+}
+
+/* Reading pages trade the site sidebar for a horizontal bar, so the book has room. */
+.reading .shell { display: block; max-width: none; }
+.reading .sidebar { flex-direction: row; align-items: center; padding: 0 clamp(12px, 3vw, 40px); }
+.reading .sidebar nav { flex-direction: row; gap: 0; overflow-x: auto; }
+.reading .sidebar nav a { padding: 13px 14px; white-space: nowrap; border-radius: 0; font-size: 0.9rem; }
+.reading .sidebar nav a[aria-current] { box-shadow: inset 0 -3px var(--gold); }
+.reading .sidebar-bottom { display: flex; gap: 20px; padding: 0; font-size: 0.85rem; }
+.reading .sidebar-bottom a { margin: 0; white-space: nowrap; }
+.reading main { max-width: 1500px; margin: 0 auto; }
+.reading .reading-heading, .reading .breadcrumbs, .reading .reading-toolbar, .reading .edition-note, .edition-notice { max-width: 62rem; margin-left: auto; margin-right: auto; }
+.reading .reading-toolbar { margin-bottom: 32px; }
+.typeset-note { margin: 0; color: var(--muted); font-style: italic; font-family: Georgia, serif; }
+.edition-notice { background: #fff6dc; border-left: 3px solid var(--gold); padding: 10px 16px; font-size: 0.9rem; }
+
+/* ---- Layout: contents column, page with inner (source page) and outer (notes) margins ---- */
+.book { display: grid; grid-template-columns: minmax(0, 1fr); justify-content: center; gap: 40px; align-items: start; }
+.book-toc { display: none; }
+.book-toc-compact { box-sizing: border-box; width: 100%; max-width: 62rem; margin: 0 auto 20px; background: white; border: 1px solid var(--line); border-radius: 4px; padding: 10px 16px; }
+.book-toc-compact summary { cursor: pointer; font-weight: 600; }
+.book-toc ol, .book-toc-compact ol { list-style: none; margin: 10px 0 4px; padding: 0; }
+.book-toc li, .book-toc-compact li { margin: 0; line-height: 1.3; }
+.book-toc a, .book-toc-compact a { display: block; padding: 5px 0; text-decoration: none; color: var(--ink); }
+.book-toc a:hover, .book-toc-compact a:hover { color: var(--rubric); }
+.book-toc .toc-0, .book-toc-compact .toc-0 { font-weight: 600; margin-top: 6px; }
+.book-toc .toc-1, .book-toc-compact .toc-1 { padding-left: 14px; font-size: 0.92em; }
+.book-toc .is-current > a { color: var(--rubric); box-shadow: inset 2px 0 var(--rubric); padding-left: 8px; }
+
+.book-page {
+  position: relative;
+  box-sizing: content-box;
+  max-width: var(--measure);
+  margin: 0 auto;
+  padding: 3.5em var(--outer) 4.5em var(--inner);
+  padding-right: calc(var(--outer) + 3.2em);
+  background: var(--paper);
+  color: var(--text);
+  border: 1px solid #ddd5c6;
+  box-shadow: 0 1px 2px rgba(60, 45, 20, 0.08), 0 12px 32px -12px rgba(60, 45, 20, 0.18);
+  font-family: "OLL Libertinus", "Libertinus Serif", "Linux Libertine O", Georgia, serif;
+  font-size: 1.1875rem;
+  line-height: 1.55;
+  text-align: justify;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  hyphenate-limit-chars: 6 3 3;
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures;
+  text-rendering: optimizeLegibility;
+  overflow-wrap: break-word;
+}
+.font-pagella .book-page { font-family: "OLL Pagella", "TeX Gyre Pagella", Palatino, "Palatino Linotype", serif; line-height: 1.5; }
+.font-lmodern .book-page { font-family: "OLL Latin Modern", "Latin Modern Roman", "CMU Serif", Georgia, serif; }
+
+@media (min-width: 1120px) {
+  .reading { --outer: 13.5em; }
+  .book-page { padding-right: calc(var(--outer) + 1em); }
+}
+@media (min-width: 1440px) {
+  .book { grid-template-columns: 15rem minmax(0, max-content); }
+  .book-toc { display: block; position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow-y: auto; font-size: 0.9rem; padding-right: 8px; }
+  .book-toc h2 { font-size: 0.8rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-family: inherit; font-weight: 600; margin: 4px 0 8px; }
+  .book-toc-compact { display: none; }
+  .book-page { margin: 0; }
+}
+
+/* Running head: like a book's header line, updated with the current chapter by reader.js. */
+.running-head {
+  position: sticky; top: 0; z-index: 1;
+  display: flex; justify-content: space-between; gap: 1em;
+  margin: -3.5em 0 2.2em; padding: 0.9em 0 0.5em;
+  background: var(--paper);
+  border-bottom: 0.5px solid var(--text);
+  font-size: 0.72em; letter-spacing: 0.08em; font-variant-caps: all-small-caps; font-size-adjust: none;
+  text-align: left; hyphens: none; color: var(--soft);
+}
+.running-head span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.running-head .rh-section { font-style: italic; letter-spacing: 0.02em; font-variant-caps: normal; }
+
+/* ---- Paragraphs: TeX decided indent vs. noindent; spacing is TeX's, not the web's ---- */
+.book-page p { margin: 0; }
+.book-page p.page-markers { height: 0; line-height: 0; }
+.book-page p.indent { text-indent: 1.5em; }
+.book-page p.noindent { text-indent: 0; }
+.book-page em, .book-page i { font-style: italic; }
+.book-page b, .book-page strong { font-weight: 700; }
+.book-page a { color: inherit; text-decoration: none; }
+.book-page a[href]:hover { color: var(--rubric); }
+.book-page sup { line-height: 0; }
+.book-page hr { border: 0; border-top: 0.5px solid var(--text); width: 30%; margin: 1.5em auto; }
+
+/* ---- Headings, after the standard LaTeX classes ---- */
+.book-page h1, .book-page h2, .book-page h3, .book-page h4, .book-page h5, .book-page h6 {
+  font-family: inherit; color: var(--text); text-align: left; hyphens: manual; -webkit-hyphens: manual;
+  line-height: 1.25; font-weight: 700; break-after: avoid; scroll-margin-top: 3.2em; text-indent: 0;
+}
+.book-page .titlemark { color: var(--rubric); }
+.book-page h1.partHead, .book-page h1.likepartHead {
+  margin: 3em 0 2.2em; padding: 2.2em 0; text-align: center; font-size: 1.85em; line-height: 1.3;
+  border-top: 0.5px solid var(--rule); border-bottom: 0.5px solid var(--rule);
+}
+.book-page h1.partHead .titlemark { display: block; font-size: 0.6em; letter-spacing: 0.14em; font-variant-caps: all-small-caps; margin-bottom: 0.4em; }
+.book-page .titlemark br { display: none; }
+.book-page h2.chapterHead, .book-page h2.likechapterHead { margin: 2.6em 0 1.6em; font-size: 1.7em; }
+.book-page h2.chapterHead .titlemark { display: block; font-size: 0.6em; font-weight: 400; letter-spacing: 0.1em; font-variant-caps: all-small-caps; }
+.book-page h3.sectionHead, .book-page h3.likesectionHead { margin: 1.9em 0 0.75em; font-size: 1.3em; }
+.book-page h4.subsectionHead, .book-page h4.likesubsectionHead { margin: 1.5em 0 0.55em; font-size: 1.1em; }
+.book-page h5.subsubsectionHead, .book-page h5.likesubsubsectionHead { margin: 1.2em 0 0.4em; font-size: 1em; }
+.book-page .paragraphHead, .book-page .likeparagraphHead { font-weight: 700; margin-right: 0.6em; }
+.book-page .subparagraphHead, .book-page .likesubparagraphHead { font-weight: 700; font-style: italic; margin-right: 0.5em; }
+.book-page h3.titlemark, .book-page .titlemark + br { display: none; }
+.book-page .sectionHead .titlemark, .book-page .subsectionHead .titlemark { margin-right: 0.8em; }
+
+/* \maketitle and title pages */
+.book-page .maketitle { text-align: center; margin: 1em 0 3em; }
+.book-page .maketitle .titleHead { text-align: center; font-size: 1.75em; font-weight: 400; margin: 0.5em 0 1em; }
+.book-page .maketitle .author, .book-page .maketitle .date { font-size: 1.15em; margin: 0.4em 0; }
+
+.book-page .titlepage { text-align: center; margin: 1.5em 0 3.5em; padding-bottom: 2.5em; border-bottom: 0.5px solid var(--rule); hyphens: manual; }
+.book-page .titlepage p { text-indent: 0; margin: 0.5em 0; }
+.book-page .titlepage blockquote { text-align: justify; margin: 1.6em 3em; }
+
+/* \tableofcontents */
+.book-page .tableofcontents { margin: 1em 0 2.5em; text-align: left; hyphens: manual; }
+.book-page .tableofcontents span { display: block; }
+.book-page .partToc { font-weight: 700; margin-top: 0.9em; }
+.book-page .chapterToc { font-weight: 700; margin-top: 0.5em; }
+.book-page .sectionToc, .book-page .likesectionToc { padding-left: 1.5em; text-indent: -1.5em; }
+.book-page .subsectionToc, .book-page .likesubsectionToc { padding-left: 3em; }
+.book-page .tableofcontents br { display: none; }
+
+/* ---- Displays ---- */
+.book-page blockquote { margin: 0.7em 2.2em; padding: 0; }
+.book-page blockquote p.noindent + p.noindent { margin-top: 0.4em; }
+.book-page div.verse { margin: 0.7em 0 0.7em 2.6em; text-align: left; hyphens: manual; -webkit-hyphens: manual; }
+.book-page div.verse p { text-indent: 0; }
+.book-page div.verse + div.verse { margin-top: 0.4em; }
+.book-page .center, .book-page div.center p { text-align: center; text-indent: 0; }
+.book-page .flushright, .book-page div.flushright p { text-align: right; text-indent: 0; }
+.book-page .flushleft, .book-page div.flushleft p { text-align: left; text-indent: 0; }
+.book-page div.center, .book-page div.flushright, .book-page div.flushleft { margin: 0.8em 0; }
+.book-page ul, .book-page ol { margin: 0.5em 0; padding-left: 2.2em; }
+.book-page li { margin: 0.15em 0; }
+.book-page dl { margin: 0.6em 0; }
+.book-page dt { font-weight: 700; }
+.book-page dd { margin: 0 0 0.3em 2em; }
+.book-page .unsicher { color: var(--soft); text-decoration: underline dotted var(--faint); text-underline-offset: 0.2em; }
+.book-page math[display="block"] { margin: 0.8em auto; }
+
+/* Tables (tabular, longtable): rules from \hline / \cline, booktabs weight */
+.book-page div.tabular, .book-page div.longtable { overflow-x: auto; margin: 1.2em 0; }
+.book-page table { border-collapse: collapse; margin: 0 auto; font-size: 0.86em; line-height: 1.35; text-align: left; hyphens: auto; }
+.book-page td, .book-page th { padding: 0.25em 0.55em; vertical-align: top; }
+.book-page td p { text-indent: 0; }
+.book-page tr.hline td { padding: 0; height: 0; border-top: 0.8px solid var(--text); }
+.book-page tr.cline td { padding: 0; height: 0; }
+.book-page table > tbody > tr.hline:first-child td, .book-page table > tr.hline:first-child td { border-top-width: 1.4px; }
+.book-page table > tbody > tr.hline:last-child td, .book-page table > tr.hline:last-child td { border-top-width: 1.4px; }
+.book-page caption { caption-side: top; font-size: 0.95em; margin-bottom: 0.4em; }
+
+/* ---- Footnote marks and the note apparatus ---- */
+.book-page .footnote-mark a { color: var(--rubric); font-feature-settings: "sups"; }
+.book-page .footnote-mark sup { font-size: 0.68em; padding-left: 0.05em; }
+.book-page .footnotes { margin-top: 3em; padding-top: 1em; border-top: 0.5px solid var(--text); font-size: 0.85em; line-height: 1.4; }
+.book-page .footnotes p { text-indent: 0; margin: 0.35em 0; }
+.book-page .footnotes .footnote-mark a { margin-right: 0.3em; }
+
+.book-page .sidenote, .book-page .marginpar {
+  font-size: 0.74em; line-height: 1.38; text-align: left; text-indent: 0; hyphens: auto; color: var(--soft);
+}
+.book-page .sidenote::before { content: attr(data-note) "\2009"; color: var(--rubric); font-size: 0.85em; vertical-align: 0.35em; }
+.book-page .sidenote > span { font-size: inherit !important; }
+.book-page .sidenote .verse, .book-page .sidenote .blockquote, .book-page .sidenote .div { display: block; }
+.book-page .marginpar p { text-indent: 0; }
+.book-page aside.note-block { margin: 0.5em 0 0.9em 1.5em; padding-left: 0.9em; border-left: 1px solid var(--rule); font-size: 0.8em; line-height: 1.42; color: var(--soft); }
+.book-page aside.note-block p { text-indent: 0; }
+.book-page aside.note-block p + p { margin-top: 0.3em; }
+.book-page aside.note-block span { font-size: inherit !important; }
+.book-page aside.note-block .note-label { color: var(--rubric); margin-right: 0.35em; }
+.book-page .marginpar span { font-size: inherit !important; }
+.book-page .marginpar { font-style: italic; }
+
+/* Source page markers (\quellseite): a hairline at the break, the page number in the inner margin */
+.book-page .quellseite { display: inline-block; width: 0; height: 0.95em; vertical-align: -0.08em; border-left: 0.5px solid var(--faint); margin: 0 0.06em; }
+.book-page .quellseite::before {
+  content: attr(data-page); position: absolute; left: 0; width: calc(var(--inner) - 0.9em); text-align: right;
+  font-size: 0.68em; line-height: 2.3; white-space: nowrap; color: var(--faint); font-variant-numeric: tabular-nums; font-style: normal; font-weight: 400; text-indent: 0;
+}
+.book-page:lang(de) .quellseite::before { content: "S.\2009" attr(data-page); }
+
+/* Wide: notes live in the outer margin, as in the printed book */
+@media (min-width: 1120px) {
+  .book-page .sidenote, .book-page .marginpar {
+    float: right; clear: right; width: calc(var(--outer) - 1.5em); margin-right: calc(-1 * var(--outer) + 0.2em);
+    margin-top: 0.25em; margin-bottom: 0.6em; position: relative;
+  }
+  .book-page .marginpar { border-left: 1.5px solid var(--rule); padding-left: 0.7em; margin-right: calc(-1 * var(--outer) - 0.5em); }
+  .book-page .footnotes { display: none; }
+}
+/* Narrow: the note opens under its paragraph when the mark is tapped (reader.js) */
+@media (max-width: 1119px) {
+  .book-page .sidenote { display: none; }
+  .book-page .sidenote.is-open { display: block; float: none; margin: 0.4em 0 0.6em; padding: 0.5em 0.8em; background: #f6f1e6; border-left: 2px solid var(--rubric); }
+  .book-page .marginpar { float: right; clear: right; width: 36%; max-width: 13em; margin: 0.2em 0 0.4em 1em; padding-left: 0.6em; border-left: 1.5px solid var(--rule); }
+}
+@media (max-width: 700px) {
+  .reading { --inner: 1.15em; }
+  .book-page { font-size: 1.0625rem; padding: 2em 1.15em 3em; border-left: 0; border-right: 0; margin: 0 -20px; }
+  .running-head { margin-top: -2em; }
+  .book-page .quellseite::before, .book-page:lang(de) .quellseite::before { content: none; }
+  .book-page .quellseite { border-left-color: var(--soft); }
+  .book-page blockquote { margin: 0.6em 1em; }
+  .book-page div.verse { margin-left: 1em; }
+  .reading .sidebar-bottom { display: none; }
+}
+
+@media print {
+  .reading { background: none; }
+  .book-toc, .book-toc-compact, .running-head, .edition-notice { display: none; }
+  .book-page { box-shadow: none; border: 0; padding: 0; max-width: none; }
+}

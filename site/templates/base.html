@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="{% block lang %}en{% endblock %}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="{% block description %}An open reading room for Lutheran books. Read online or download PDF and EPUB editions typeset with LaTeX.{% endblock %}">
+  <title>{% block title %}The collection{% endblock %} | OpenLutheranLibrary</title>
+  <link rel="stylesheet" href="{{ static('library.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body class="{% block bodyclass %}{% endblock %}">
+<a class="skip" href="#main">Skip to content</a>
+<header class="masthead">
+  <a class="brand" href="/" aria-label="OpenLutheranLibrary home">
+    <svg class="mark" viewBox="0 0 48 48" aria-hidden="true"><path d="M5 11c8-2 13 0 19 4 6-4 11-6 19-4v28c-8-2-13 0-19 4-6-4-11-6-19-4z" fill="none" stroke="currentColor" stroke-width="2"/><path d="M24 15v28M24 3v8M20 7h8" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+    <span>OpenLutheran<span class="brand-last">Library</span></span>
+  </a>
+</header>
+<div class="shell">
+<aside class="sidebar">
+  <nav aria-label="Library">
+    <a {% if page == 'catalog' %}aria-current="page"{% endif %} href="/">The collection</a>
+    <a {% if page == 'topics' %}aria-current="page"{% endif %} href="/topics/">Topic index</a>
+  </nav>
+  <div class="sidebar-bottom">
+    <a {% if page == 'about' %}aria-current="page"{% endif %} href="/about/">About the library</a>
+  </div>
+</aside>
+<main id="main" tabindex="-1">{% block content %}{% endblock %}</main>
+</div>
+</body>
+</html>

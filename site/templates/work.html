@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}{{ book.full_title }}{% if book.author %} · {{ book.author }}{% endif %}{% endblock %}
+{% block description %}{{ book.description or book.full_title }}{% endblock %}
+{% block head %}<link rel="stylesheet" href="{{ static('reader.css') }}"><script src="{{ static('reader.js') }}" defer></script>{% endblock %}
+{% block bodyclass %}reading{% endblock %}
+{% block content %}<div class="breadcrumbs"><a href="/">The collection</a></div>
+<header class="reading-heading"><p class="metadata">Book{% if book.year %} / {{ book.year }}{% endif %} / {{ languages.get(book.language, book.language) }}</p>
+<h1>{{ book.title }}</h1>{% if book.subtitle %}<p class="subtitle">{{ book.subtitle }}</p>{% endif %}
+<p class="byline">{{ book.author }}</p>
+<div class="tags">{% for t in book.topics %}<a href="/topics/{{ topic_slug(t) }}/">{{ t }}</a>{% endfor %}</div></header>
+<div class="reading-toolbar">
+  <div><a class="button" href="{{ book.slug }}.pdf" download>Download PDF</a><a class="button secondary" href="{{ book.slug }}.epub" download>Download EPUB</a><a href="{{ book.slug }}.pdf" target="_blank" rel="noopener">Page view{% if book.pages %} ({{ book.pages }} pages){% endif %}</a><a href="{{ book.slug }}-latex.zip" download>LaTeX source</a></div>
+  <p class="typeset-note">Typeset with LuaLaTeX in {{ fonts.get(book.font, book.font) }}</p>
+</div>
+<div class="book font-{{ book.font }}">
+  {% if toc %}<nav class="book-toc" aria-label="Contents"><h2>Contents</h2><ol>{% for entry in toc %}<li class="toc-{{ entry.level }}"><a href="#{{ entry.id }}">{{ entry.title }}</a></li>{% endfor %}</ol></nav>
+  <details class="book-toc-compact"><summary>Contents</summary><ol>{% for entry in toc %}<li class="toc-{{ entry.level }}"><a href="#{{ entry.id }}">{{ entry.title }}</a></li>{% endfor %}</ol></details>{% endif %}
+  <article class="book-page" lang="{{ book.language }}"><div class="running-head" aria-hidden="true"><span class="rh-title">{% if book.author %}{{ book.author }}: {% endif %}{{ book.full_title }}</span><span class="rh-section"></span></div>{{ body|safe }}</article>
+</div>
+<aside class="edition-note"><h2>Edition</h2>{% if book.description %}<p>{{ book.description }}</p>{% endif %}{% if book.source %}<p>{{ book.source }}</p>{% endif %}<p>{{ book.rights }}</p><p class="metadata">Typeset {{ book.built_at }}</p></aside>{% endblock %}

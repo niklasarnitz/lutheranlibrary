@@ -1,0 +1,8 @@
+<article class="work-row" data-search="{{ [book.title, book.subtitle, book.author, book.description, book.topics|join(' '), book.year]|join(' ')|lower }}" data-topics="{% for t in book.topics %}{{ topic_slug(t) }} {% endfor %}">
+  <div class="work-summary"><div class="metadata">Book{% if book.year %} / {{ book.year }}{% endif %}{% if book.pages %} / {{ book.pages }} pages{% endif %}</div>
+  <h3><a href="{{ book.url }}">{{ book.title }}{% if book.subtitle %}. {{ book.subtitle }}{% endif %}</a></h3>
+  {% if book.author %}<p class="author">{{ book.author }}</p>{% endif %}
+  {% if book.description %}<p>{{ book.description|truncate(260) }}</p>{% endif %}
+  <div class="tags">{% for t in book.topics %}<a href="/topics/{{ topic_slug(t) }}/">{{ t }}</a>{% endfor %}</div></div>
+  <div class="row-formats"><a href="{{ book.url }}">Read online</a><span><a href="{{ book.url }}{{ book.slug }}.pdf" download>PDF</a> / <a href="{{ book.url }}{{ book.slug }}.epub" download>EPUB</a></span></div>
+</article>

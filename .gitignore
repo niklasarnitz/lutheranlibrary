@@ -7,3 +7,8 @@
 *.synctex.gz
 *.xdv
 *.pdf
+public/
+.cache/
+site/static/fonts/
+__pycache__/
+.venv/

@@ -1,0 +1,4 @@
+{% extends 'base.html' %}{% block title %}Topic index{% endblock %}
+{% block content %}<header class="page-heading"><h1>Topic index</h1></header>
+<div class="topic-index">{% for topic in topics %}<a href="/topics/{{ topic.slug }}/"><h2>{{ topic.name }}</h2><span class="metadata">{{ topic.books|length }} work{{ '' if topic.books|length == 1 else 's' }}</span></a>{% else %}<div class="empty-state"><p>No topics yet.</p></div>{% endfor %}</div>
+{% endblock %}

@@ -1,0 +1,17 @@
+/* Book conventions appended to TeX4ht's stylesheet; readers may override fonts. */
+body { line-height: 1.45; text-align: justify; hyphens: auto; -epub-hyphens: auto; }
+p.indent { text-indent: 1.5em; margin: 0; }
+p.noindent { text-indent: 0; margin: 0; }
+h1, h2, h3, h4, h5 { text-align: left; hyphens: none; page-break-after: avoid; line-height: 1.25; }
+h1.partHead, h2.chapterHead, h2.likechapterHead { text-align: center; margin: 3em 0 1.5em; page-break-before: always; }
+h3.sectionHead, h3.likesectionHead { font-size: 1.25em; margin: 2em 0 0.8em; }
+h4.subsectionHead, h4.likesubsectionHead { font-size: 1.08em; margin: 1.5em 0 0.6em; }
+.paragraphHead, .likeparagraphHead { font-weight: bold; }
+blockquote.quote, blockquote.quotation { margin: 0.8em 1.5em; font-size: 0.95em; }
+div.verse { margin: 0.8em 0 0.8em 2em; text-align: left; }
+div.marginpar { float: right; width: 30%; margin: 0 0 0.5em 1em; font-size: 0.8em; font-style: italic; text-align: left; }
+span.quellseite { display: none; }
+.unsicher { color: #777; }
+table.longtable, table.tabular { border-collapse: collapse; margin: 1em auto; font-size: 0.9em; }
+tr.hline td { border-top: 1px solid currentColor; }
+div.footnotes { font-size: 0.85em; border-top: 1px solid #999; margin-top: 2em; }

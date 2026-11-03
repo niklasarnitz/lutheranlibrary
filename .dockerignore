@@ -1,0 +1,12 @@
+.git
+.venv
+.cache
+.cache-build.log
+public
+public.*
+site/static/fonts
+**/__pycache__
+**/*.pdf
+**/*.aux
+**/*.log
+**/*.synctex.gz

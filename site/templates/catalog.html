@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% block head %}<script src="{{ static('catalog.js') }}" defer></script>{% endblock %}
+{% block content %}
+<h1>Collection</h1>
+<form class="search-panel" role="search" id="catalog-filter" hidden>
+  <label for="q">Search</label>
+  <div class="search-line"><input type="search" id="q" name="q" placeholder="Title, author, or description" autocomplete="off"></div>
+  <div class="filters"><label for="topic">Topic <select id="topic" name="topic"><option value="">All topics</option>{% for topic in topics %}<option value="{{ topic.slug }}">{{ topic.name }}</option>{% endfor %}</select></label>
+  <a href="/" id="clear-filters" hidden>Clear filters</a></div>
+</form>
+<section class="collection-section">
+  <div class="section-heading"><h2 id="results-heading">Works</h2><span id="results-count" aria-live="polite">{{ books|length }} work{{ '' if books|length == 1 else 's' }}</span></div>
+  {% for book in books %}{% include 'work_row.html' %}{% endfor %}
+  <div class="empty-state" id="no-results" hidden><p>No matching works.</p><a href="/">Clear filters</a></div>
+</section>
+{% endblock %}
