@@ -1,0 +1,19 @@
+% Wilhelm Löhe: Der evangelische Geistliche, Zweites Bändchen (3. Aufl., Gütersloh 1876)
+% Text: Folio OCR (ocr.arnitz.org), bereinigt; "% p. n" = Scan-Seite n.
+\documentclass[11pt,a5paper,twoside]{article}
+\usepackage[ngerman]{babel}
+\usepackage{fontspec}
+\setmainfont{Libertinus Serif}
+\usepackage[autostyle]{csquotes}
+\usepackage[inner=18mm,outer=28mm,top=20mm,bottom=22mm,marginparwidth=20mm,marginparsep=3mm]{geometry}
+% Randglossen: \marginpar weicht Kollisionen aus (marginnote stapelt sie übereinander)
+\newcommand{\marginnote}[1]{\marginpar{\footnotesize\itshape\raggedright #1}}
+\usepackage[perpage,symbol*]{footmisc}
+\usepackage{xcolor}
+\newcommand{\unsicher}[1]{\textcolor{gray}{#1}\textsuperscript{\textcolor{gray}{?}}}
+\setcounter{secnumdepth}{0}
+\raggedbottom
+\emergencystretch=2em
+\begin{document}
+\input{body}
+\end{document}
