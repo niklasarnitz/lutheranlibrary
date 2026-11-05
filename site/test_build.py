@@ -92,6 +92,30 @@ class ReaderTests(unittest.TestCase):
         self.assertIn('data-note="*"><span><span style="font-size:90%;">Eine Anmerkung.</span></span>', html)
         self.assertIn('id="nb-fn2x0"', html)
 
+    def test_bare_footnote_markers_keep_note_text_and_boundaries(self):
+        for wrapped, long in ((False, False), (False, True), (True, False), (True, True)):
+            with self.subTest(wrapped=wrapped, long=long):
+                text = "Second note. " * (80 if long else 1)
+                raw = f"""<html><body><p>Text<span class='footnote-mark'>
+                    <a href='#fn1' id='fn1-bk'>1</a></span> More<span class='footnote-mark'>
+                    <a href='#fn2' id='fn2-bk'>2</a></span></p>
+                    <div class='footnotes'><p><span class='footnote-mark'>
+                    <a href='#fn1-bk' id='fn1'>1</a></span>First note.</p>
+                    <span class='footnote-mark'><a href='#fn2-bk' id='fn2'>2</a></span>{text}
+                    <span>Following commentary.</span></div></body></html>"""
+                if wrapped:
+                    raw = raw.replace("<div class='footnotes'>", "<div class='footnotes'><aside class='footnotetext'>")
+                    raw = raw.replace("</div>", "</aside></div>")
+                rendered, _ = reader_html(raw)
+                doc = lxml.html.fromstring(rendered)
+                first = doc.cssselect('.sidenote[data-note="1"]')[0]
+                second = doc.cssselect('#nb-fn2' if long else '.sidenote[data-note="2"]')[0]
+                self.assertEqual(first.text_content().strip(), "First note.")
+                self.assertIn(text.strip(), second.text_content())
+                self.assertIn("Following commentary.", second.text_content())
+                self.assertFalse(second.cssselect('.footnote-mark'))
+                self.assertEqual(len(doc.cssselect('.footnotes #fn2')), 1)
+
     def test_heading_footnotes_stay_in_body_but_not_contents_labels(self):
         raw = """<html><body>
             <h2 class='chapterHead' id='melodien'>Zugabe<span class='footnote-mark'>

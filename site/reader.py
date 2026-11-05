@@ -98,6 +98,12 @@ def build_sidenotes(body):
             else:
                 parts.append(element)
         for paragraph in parts:
+            if "footnote-mark" in paragraph.get("class", "").split():
+                # Bare markers carry the note text in their tail. Keep both inside a
+                # paragraph so removing the copied marker preserves that text.
+                marker = copy.deepcopy(paragraph)
+                paragraph = lxml.html.Element("p")
+                paragraph.append(marker)
             back = paragraph.cssselect("span.footnote-mark a[href]")
             if back:
                 notes.append((back[0].get("id"), back[0].text_content().strip(), [paragraph]))
