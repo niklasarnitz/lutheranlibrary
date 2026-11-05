@@ -13,27 +13,13 @@
 % topics: [Pastoraltheologie]
 % source: >-
 %   Transkription nach Scan: Folio-OCR (ocr.arnitz.org), bereinigt; unsichere
-%   Lesungen sind grau mit „?“ markiert. "% p. n" im Quelltext = Scan-Seite n.
+%   Lesungen sind grau mit „?“ markiert. Seitenmarken am Rand = Scan-Seiten.
 % rights: "Gemeinfrei (Public Domain): erschienen vor 1900, Verfasser gest. 1872."
 % ---
 % Wilhelm Löhe: Der evangelische Geistliche, Erstes Bändchen (4. Aufl., Gütersloh 1872)
-% Text: Folio OCR (ocr.arnitz.org), bereinigt; "% p. n" = Scan-Seite n.
-\documentclass[11pt,a5paper,twoside]{article}
-\usepackage[ngerman]{babel}
-\usepackage{fontspec}
-\setmainfont{Libertinus Serif}
-\usepackage[autostyle]{csquotes}
-\usepackage[inner=18mm,outer=28mm,top=20mm,bottom=22mm,marginparwidth=20mm,marginparsep=3mm]{geometry}
-% Randglossen: \marginpar weicht Kollisionen aus (marginnote stapelt sie übereinander)
-\newcommand{\marginnote}[1]{\marginpar{\footnotesize\itshape\raggedright #1}}
-\usepackage[perpage,symbol*]{footmisc}
-\usepackage{xcolor}
-\usepackage{rotating}
-\newcommand{\zl}[1]{\begin{tabular}[t]{@{}c@{}}#1\end{tabular}}
-\newcommand{\unsicher}[1]{\textcolor{gray}{#1}\textsuperscript{\textcolor{gray}{?}}}
-\setcounter{secnumdepth}{0}
-\raggedbottom
-\emergencystretch=2em
+% Text: Folio OCR (ocr.arnitz.org), bereinigt; \quellseite{n} = Scan-Seite n.
+% Satz nach TYPESETTING.md (Klasse oll-book).
+\documentclass{oll-book}
 \begin{document}
 \input{body}
 \end{document}

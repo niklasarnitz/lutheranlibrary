@@ -23,7 +23,7 @@ top of `main.tex`:
 % source: Transkription nach Scan: Folio-OCR, bereinigt.
 % rights: "Gemeinfrei (Public Domain): erschienen vor 1900."
 % ---
-\documentclass[11pt,a5paper,twoside]{article}
+\documentclass{oll-book}
 …
 ```
 
@@ -35,6 +35,11 @@ top of `main.tex`:
 | `topics` | list; each topic gets a page |
 | `slug` | URL name (`/works/<slug>/`), default: the directory name |
 | `draft: true` | leaves the book out of the site |
+
+Every book uses the library's document class `oll-book`
+(`site/tex/oll-book.cls`) and follows [TYPESETTING.md](TYPESETTING.md), so all
+books share one design and one markup standard. Compile a book by hand with
+`TEXINPUTS=../site/tex//: lualatex main.tex` from its directory.
 
 Directories without frontmatter are ignored. Uncertain readings use
 `\unsicher{…}`; source page markers `\quellseite{n}` appear in the reader's

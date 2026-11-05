@@ -14,6 +14,8 @@ from xml.sax.saxutils import escape
 
 TEX = Path(__file__).resolve().parent / "tex"
 JOB = "main"
+# The library's own LaTeX classes and packages, copied next to every book (see TYPESETTING.md).
+CLASS_FILES = sorted(p.name for p in TEX.iterdir() if p.suffix in {".cls", ".sty"})
 STEP_TIMEOUT = int(os.environ.get("STEP_TIMEOUT", "600"))
 # LaTeX output that may lie around in a book directory from compiling it by hand.
 BUILD_LEFTOVERS = {".pdf", ".aux", ".log", ".out", ".toc", ".fls", ".fdb_latexmk", ".gz", ".xdv",
@@ -66,7 +68,8 @@ def stage_dir(book, build, name):
         target = path / file.relative_to(book)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(file, target)
-    shutil.copy(TEX / "oll.cfg", path / "oll.cfg")
+    for shared in ("oll.cfg", *CLASS_FILES):
+        shutil.copy(TEX / shared, path / shared)
     return path
 
 

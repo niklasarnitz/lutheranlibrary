@@ -138,6 +138,11 @@ class BookTests(unittest.TestCase):
         (path / "body.tex").write_text("Changed.", "utf-8")
         self.assertNotEqual(build.book_hash(book), before)
 
+    def test_reader_font_follows_the_library_class_options(self):
+        self.assertEqual(build.main_font("\\documentclass{oll-book}"), "libertinus")
+        self.assertEqual(build.main_font("\\documentclass[english,pagella]{oll-book}"), "pagella")
+        self.assertEqual(build.main_font("\\documentclass{article}"), "lmodern")
+
     def test_site_is_rendered_from_cached_editions(self):
         path = self.book("lochner")
         [book] = build.find_books(self.root)
@@ -161,7 +166,7 @@ class BookTests(unittest.TestCase):
         self.assertIn("(12 pages)", page)
         self.assertTrue((out / "works/lochner/lochner.epub").exists())
         with zipfile.ZipFile(out / "works/lochner/lochner-latex.zip") as archive:
-            self.assertEqual(sorted(archive.namelist()), ["lochner/body.tex", "lochner/main.tex"])
+            self.assertEqual(sorted(archive.namelist()), ["lochner/body.tex", "lochner/main.tex", "lochner/oll-book.cls"])
         catalog = (out / "index.html").read_text("utf-8")
         self.assertIn('data-topics="liturgik gottesdienst-predigt "', catalog)
         self.assertIn("Gottesdienst &amp; Predigt", (out / "topics/gottesdienst-predigt/index.html").read_text())

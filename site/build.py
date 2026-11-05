@@ -25,7 +25,7 @@ import jinja2
 import yaml
 
 from reader import reader_html
-from typeset import JOB, StepFailed, source_files, typeset
+from typeset import CLASS_FILES, JOB, TEX, StepFailed, source_files, typeset
 
 SITE = Path(__file__).resolve().parent
 ROOT = SITE.parent
@@ -130,6 +130,10 @@ def find_books(root=ROOT):
 
 def main_font(source):
     """The reader uses a web copy of the font the document itself is set in."""
+    doc_class = re.search(r"\\documentclass(?:\[([^\]]*)\])?\{([^}]*)\}", source)
+    if doc_class and doc_class.group(2).strip() == "oll-book":
+        options = {o.strip() for o in (doc_class.group(1) or "").split(",")}
+        return "pagella" if "pagella" in options else "libertinus"
     match = re.search(r"\\setmainfont(?:\[[^\]]*\])?\{([^}]*)\}", source)
     if not match:
         return "lmodern"  # LuaLaTeX's default
@@ -190,6 +194,10 @@ def source_zip(book, target):
     with zipfile.ZipFile(target, "w", zipfile.ZIP_DEFLATED) as archive:
         for file in source_files(book.path):
             archive.write(file, f"{book.slug}/{file.relative_to(book.path).as_posix()}")
+        # The library class travels with the sources, so the download compiles on its own.
+        for name in CLASS_FILES:
+            if not (book.path / name).exists():
+                archive.write(TEX / name, f"{book.slug}/{name}")
 
 
 def write(out, path, text):

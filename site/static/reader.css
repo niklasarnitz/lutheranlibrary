@@ -176,6 +176,7 @@
 .book-page dt { font-weight: 700; }
 .book-page dd { margin: 0 0 0.3em 2em; }
 .book-page .unsicher { color: var(--soft); text-decoration: underline dotted var(--faint); text-underline-offset: 0.2em; }
+.book-page .gesperrt { letter-spacing: 0.12em; }
 .book-page math[display="block"] { margin: 0.8em auto; }
 
 /* Tables (tabular, longtable): rules from \hline / \cline, booktabs weight */
