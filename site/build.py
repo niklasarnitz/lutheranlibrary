@@ -55,6 +55,7 @@ class Book:
     topics: list = field(default_factory=list)
     source: str = ""
     rights: str = ""
+    kind: str = "book"
     # Filled in by the build.
     pages: int | None = None
     font: str = "libertinus"
@@ -221,6 +222,8 @@ def render_site(books, editions, out):
     books = sorted(books, key=lambda b: (b.author.split()[-1].lower() if b.author else "", b.title.lower(),
                                          b.subtitle.lower()))
     write(out, "index.html", env.get_template("catalog.html").render(books=books, page="catalog"))
+    write(out, "books/index.html", env.get_template("catalog.html").render(
+        books=[book for book in books if book.kind == "book"], page="books"))
     write(out, "topics/index.html", env.get_template("topics.html").render(page="topics"))
     for topic in topics.values():
         write(out, f"topics/{topic['slug']}/index.html",

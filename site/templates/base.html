@@ -19,8 +19,10 @@
 <div class="shell">
 <aside class="sidebar">
   <nav aria-label="Library">
-    <a {% if page == 'catalog' %}aria-current="page"{% endif %} href="/">The collection</a>
-    <a {% if page == 'topics' %}aria-current="page"{% endif %} href="/topics/">Topic index</a>
+    <a {% if page == 'catalog' %}aria-current="page"{% endif %} href="/">Collection</a>
+    <a {% if page == 'books' %}aria-current="page"{% endif %} href="/books/">Books</a>
+    <a {% if page == 'magazines' %}aria-current="page"{% endif %} href="/magazines/">Magazines</a>
+    <a {% if page == 'topics' %}aria-current="page"{% endif %} href="/topics/">Topical Index</a>
   </nav>
   <div class="sidebar-bottom">
     <a {% if page == 'about' %}aria-current="page"{% endif %} href="/about/">About the library</a>

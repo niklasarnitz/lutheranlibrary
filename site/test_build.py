@@ -168,6 +168,18 @@ class BookTests(unittest.TestCase):
         with zipfile.ZipFile(out / "works/lochner/lochner-latex.zip") as archive:
             self.assertEqual(sorted(archive.namelist()), ["lochner/body.tex", "lochner/main.tex", "lochner/oll-book.cls"])
         catalog = (out / "index.html").read_text("utf-8")
+        from lxml import html
+        for route, active in [("index.html", "/"), ("books/index.html", "/books/")]:
+            navigation = html.fromstring((out / route).read_text()).xpath('//nav[@aria-label="Library"]/a')
+            self.assertEqual([(link.text, link.get("href")) for link in navigation],
+                             [("Collection", "/"), ("Books", "/books/"),
+                              ("Magazines", "/magazines/"), ("Topical Index", "/topics/")])
+            self.assertEqual([link.get("href") for link in navigation if link.get("aria-current") == "page"],
+                             [active])
+        books_page = html.fromstring((out / "books/index.html").read_text())
+        self.assertEqual(books_page.xpath('//h1/text()'), ["Books"])
+        self.assertEqual(books_page.xpath('//*[@class="work-row"]//h3/a/@href'), [book.url])
+        self.assertEqual(books_page.xpath('//*[@id="clear-filters"]/@href'), ["/books/"])
         self.assertIn('data-topics="liturgik gottesdienst-predigt "', catalog)
         self.assertIn("Gottesdienst &amp; Predigt", (out / "topics/gottesdienst-predigt/index.html").read_text())
         self.assertTrue((out / "404.html").exists())
