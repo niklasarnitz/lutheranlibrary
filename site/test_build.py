@@ -1,5 +1,7 @@
 """Tests for the static build: python3 -m unittest discover site"""
 import json
+import posixpath
+import shutil
 import tempfile
 import unittest
 import zipfile
@@ -9,7 +11,7 @@ import lxml.html
 
 import build
 from reader import reader_html
-from typeset import set_opf_metadata
+from typeset import set_opf_metadata, typeset
 
 # Shaped like real make4ht output (html5, fn-in) for a German source with \quellseite markers.
 TEX4HT_HTML = """<!DOCTYPE html><html lang='de'><head><title></title></head><body>
@@ -509,6 +511,60 @@ class BookTests(unittest.TestCase):
         self.assertIn("Gottesdienst &amp; Predigt", (out / "topics/gottesdienst-predigt/index.html").read_text())
         self.assertTrue((out / "404.html").exists())
         self.assertRegex(catalog, r'/static/library\.css\?v=[0-9a-f]{10}')
+
+
+class TypesetTests(unittest.TestCase):
+    @unittest.skipUnless(all(shutil.which(cmd) for cmd in ("lualatex", "make4ht", "tex4ebook")),
+                         "TeX build tools are not installed")
+    def test_digital_registers_cite_print_pages_and_link_to_local_targets(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            book = root / "book"
+            book.mkdir()
+            (book / "main.tex").write_text(r"""\documentclass{oll-book}
+\begin{document}
+\frontmatter\setcounter{page}{7}
+\chapter{Front}\label{front}
+Front matter.
+\mainmatter\setcounter{page}{23}
+\chapter{Prayer}\label{prayer}
+Prayer text.
+\subsection{Inline heading}\phantomsection\label{inline:first}
+First inline target.
+
+Second\phantomsection\label{inline:second} inline target.
+\chapter{Register}
+Print \pageref{prayer}; front \pageref{front}; inline \pageref{inline:first}, \pageref{inline:second}. Ordinary § remains.
+\begin{originalinhalt}
+\inhaltseintrag{Small type}{\pageref{prayer}}
+\end{originalinhalt}
+\end{document}
+""")
+            result = typeset(book, root / "build", {"title": "Page references"})
+            self.assertEqual(result["warnings"], [])
+            document = lxml.html.fromstring(result["html"].read_bytes())
+            paragraph = document.xpath('//p[contains(., "Print")]')[0]
+            self.assertEqual(" ".join(paragraph.text_content().split()),
+                             "Print 23; front vii; inline 23, 23. Ordinary § remains.")
+            links = paragraph.xpath('.//a')
+            self.assertEqual([link.text for link in links], ["23", "vii", "23", "23"])
+            self.assertNotEqual(links[2].get("href"), links[3].get("href"))
+            self.assertEqual(document.xpath('//p[contains(., "Small type")]//a')[0].text_content(), "23")
+            for link in links:
+                self.assertTrue(document.xpath('//*[@id=$id]', id=link.get("href").split("#")[1]))
+            with zipfile.ZipFile(result["epub"]) as archive:
+                documents = {name: lxml.html.fromstring(archive.read(name))
+                             for name in archive.namelist() if name.endswith(".xhtml")}
+                name, document = next((name, doc) for name, doc in documents.items()
+                                      if doc.xpath('//p[contains(., "Print")]'))
+                paragraph = document.xpath('//p[contains(., "Print")]')[0]
+                self.assertEqual(" ".join(paragraph.text_content().split()),
+                                 "Print 23; front vii; inline 23, 23. Ordinary § remains.")
+                self.assertEqual(document.xpath('//p[contains(., "Small type")]//a')[0].text_content(), "23")
+                for link in paragraph.xpath('.//a'):
+                    file, anchor = link.get("href").split("#")
+                    target = posixpath.normpath(posixpath.join(posixpath.dirname(name), file)) if file else name
+                    self.assertTrue(documents[target].xpath('//*[@id=$id]', id=anchor))
 
 
 if __name__ == "__main__":

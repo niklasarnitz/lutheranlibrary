@@ -100,6 +100,22 @@ def stage_dir(book, build, name):
     return path
 
 
+def pdf_page_labels(build, digital):
+    pages = dict(re.findall(r"^\\newlabel\{([^{}]+)\}\{\{.*?\}\{([0-9ivxlcdmIVXLCDM]+)\}",
+                            read_log(build / "pdf" / f"{JOB}.aux"), re.M))
+    # TeX4ht may retain an internal anchor rather than the author's label.
+    anchors = re.findall(r"^\\newlabel\{([^{}]+)\}\{\{\\rEfLiNK\{([^{}]+)\}",
+                         read_log(digital / f"{JOB}.aux"), re.M)
+    return pages | {anchor: pages[label] for label, anchor in anchors if label in pages}
+
+
+def print_page_references(markup, pages):
+    """Keep TeX4ht's digital links, replacing its § placeholder with print pages."""
+    return re.sub(r'''(<span class=['"]pageref['"]>\s*<a href=['"][^'"#]*#([^'"]+)['"]>)((?:<span\b[^>]*>)*)([^<]*)((?:</span>)*)(</a>)''',
+                  lambda m: m[1] + m[3] + pages.get(m[2], m[4]) + m[5] + m[6],
+                  markup)
+
+
 def build_pdf(book, build):
     path = stage_dir(book, build, "pdf")
     cmd = ["lualatex", "-interaction=nonstopmode", "-file-line-error=no", f"{JOB}.tex"]
@@ -123,6 +139,7 @@ def build_html(book, build):
     html = path / "out" / f"{JOB}.html"
     if not html.exists():
         raise StepFailed("TeX4ht produced no HTML.\n" + ("\n".join(tex_errors(read_log(path / f"{JOB}.log"))) or out[-3000:]))
+    html.write_text(print_page_references(html.read_text("utf-8"), pdf_page_labels(build, path)), "utf-8")
     if (build / "engraved").exists():
         shutil.copytree(build / "engraved", path / "out", dirs_exist_ok=True)
     return html, path / "out" / f"{JOB}.css", tex_errors(read_log(path / f"{JOB}.log"))
@@ -135,11 +152,11 @@ def build_epub(book, build, meta):
     if not epub.exists():
         raise StepFailed("tex4ebook produced no EPUB.\n" + ("\n".join(tex_errors(read_log(path / f"{JOB}.log"))) or out[-3000:]))
     fixed = path / "final.epub"
-    finish_epub(epub, fixed, meta)
+    finish_epub(epub, fixed, meta, pdf_page_labels(build, path))
     return fixed
 
 
-def finish_epub(src, dst, meta):
+def finish_epub(src, dst, meta, pages=None):
     """Set catalog metadata (sources rarely use \\title) and add the book stylesheet."""
     extra_css = (TEX / "epub.css").read_bytes()
     with zipfile.ZipFile(src) as zin, zipfile.ZipFile(dst, "w", zipfile.ZIP_DEFLATED) as zout:
@@ -152,6 +169,8 @@ def finish_epub(src, dst, meta):
                 data = set_opf_metadata(data.decode("utf-8"), meta).encode("utf-8")
             elif item.filename.endswith(".css"):
                 data += b"\n" + extra_css
+            elif item.filename.endswith(".xhtml") and pages:
+                data = print_page_references(data.decode("utf-8"), pages).encode("utf-8")
             zout.writestr(item.filename, data)
 
 

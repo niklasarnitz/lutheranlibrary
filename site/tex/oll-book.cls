@@ -121,6 +121,9 @@
 \ifoll@pdf
   \RequirePackage[hidelinks,bookmarksopen,bookmarksdepth=2]{hyperref}
   \pdfstringdefDisableCommands{\def\,{ }\def\\{ }}
+\else
+  \newcounter{ollanchor}
+  \newcommand{\phantomsection}{\refstepcounter{ollanchor}}
 \fi
 
 % ================================================================ markup

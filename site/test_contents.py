@@ -1,0 +1,54 @@
+"""Exercise contents destinations through the real digital typesetting pipeline."""
+import posixpath
+import shutil
+import tempfile
+import unittest
+import zipfile
+from pathlib import Path
+
+import lxml.html
+
+from typeset import typeset
+
+
+class ContentsTests(unittest.TestCase):
+    @unittest.skipUnless(all(shutil.which(cmd) for cmd in ("lualatex", "make4ht", "tex4ebook")),
+                         "TeX build tools are not installed")
+    def test_unnumbered_chapter_and_later_sections_have_distinct_destinations(self):
+        # The second heading's address plus an inert chapter counter (2000 + 0)
+        # used to collide with the twentieth heading's address (20000).
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            book = root / "book"
+            book.mkdir()
+            (book / "main.tex").write_text(
+                r"\documentclass{oll-book}\begin{document}\tableofcontents"
+                r"\chapter{Opening}Opening text."
+                + "".join(rf"\section{{Topic {n}}}Section text." for n in range(1, 22))
+                + r"\end{document}")
+            result = typeset(book, root / "build", {"title": "Contents destinations"})
+            self.assertEqual(result["warnings"], [])
+            self.check_destinations(result["html"].read_bytes())
+            with zipfile.ZipFile(result["epub"]) as archive:
+                documents = {name: lxml.html.fromstring(archive.read(name))
+                             for name in archive.namelist() if name.endswith(".xhtml")}
+                links = [(name, link) for name, doc in documents.items()
+                         for link in doc.cssselect("nav a")]
+                self.assertEqual(len(links), 22)
+                for name, link in links:
+                    file, anchor = link.get("href").split("#")
+                    target = posixpath.normpath(posixpath.join(posixpath.dirname(name), file))
+                    matches = documents[target].xpath('//*[@id=$id]', id=anchor)
+                    self.assertEqual(len(matches), 1, link.text_content())
+                    self.assertEqual(" ".join(matches[0].text_content().split()),
+                                     " ".join(link.text_content().split()))
+
+    def check_destinations(self, markup):
+        document = lxml.html.fromstring(markup)
+        links = document.cssselect(".chapterToc a, .sectionToc a")
+        self.assertEqual(len(links), 22)
+        for link in links:
+            target = link.get("href").split("#")[-1]
+            matches = document.xpath('//*[@id=$id]', id=target)
+            self.assertEqual(len(matches), 1, link.text_content())
+            self.assertEqual(" ".join(matches[0].text_content().split()), link.text_content().strip())
