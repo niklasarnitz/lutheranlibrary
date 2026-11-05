@@ -165,7 +165,7 @@ nginx on port 8080 (`/health/` for checks).
 The Komodo stack `openlutheranlibrary` on delta serves
 https://lutheranlibrary.arnitz.org using this repository's `compose.yaml`.
 Pushes to `main` trigger a signed GitHub webhook:
-`https://komodo.arnitz.org/listener/github/stack/openlutheranlibrary/main`.
+`https://komodo.arnitz.org/listener/github/stack/openlutheranlibrary/deploy`.
 Other branches do not deploy.
 
 Komodo clones `niklasarnitz/lutheranlibrary`, runs the Dockerfile's tests and
