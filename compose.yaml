@@ -1,0 +1,38 @@
+# Komodo builds the pushed revision before replacing the running static site.
+services:
+  web:
+    build: .
+    image: openlutheranlibrary:static
+    pull_policy: build
+    restart: unless-stopped
+    networks: [coolify]
+    mem_limit: 64m
+    cpus: 0.5
+    read_only: true
+    tmpfs: ["/tmp:size=16m", "/var/cache/nginx:size=16m", "/run:size=1m"]
+    cap_drop: [ALL]
+    # nginx's master switches its workers to the nginx user.
+    cap_add: [CHOWN, SETGID, SETUID]
+    security_opt: [no-new-privileges:true]
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=coolify
+      - traefik.http.routers.openlutheranlibrary.rule=Host(`lutheranlibrary.arnitz.org`)
+      - traefik.http.routers.openlutheranlibrary.entrypoints=https
+      - traefik.http.routers.openlutheranlibrary.tls=true
+      - traefik.http.routers.openlutheranlibrary.tls.certresolver=letsencrypt
+      - traefik.http.routers.openlutheranlibrary.middlewares=oll-rate
+      - traefik.http.middlewares.oll-rate.ratelimit.average=20
+      - traefik.http.middlewares.oll-rate.ratelimit.burst=60
+      - traefik.http.services.openlutheranlibrary.loadbalancer.server.port=8080
+      - traefik.http.routers.openlutheranlibrary-http.rule=Host(`lutheranlibrary.arnitz.org`)
+      - traefik.http.routers.openlutheranlibrary-http.entrypoints=http
+      - traefik.http.routers.openlutheranlibrary-http.middlewares=oll-https
+      - traefik.http.middlewares.oll-https.redirectscheme.scheme=https
+
+networks:
+  coolify:
+    external: true

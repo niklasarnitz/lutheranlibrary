@@ -160,6 +160,31 @@ replaced after a successful one.
 Live (whose TeX4ht output differs from MacTeX's) and serves the result with
 nginx on port 8080 (`/health/` for checks).
 
+## Deployment
+
+The Komodo stack `openlutheranlibrary` on delta serves
+https://lutheranlibrary.arnitz.org using this repository's `compose.yaml`.
+Pushes to `main` trigger a signed GitHub webhook:
+`https://komodo.arnitz.org/listener/github/stack/openlutheranlibrary/main`.
+Other branches do not deploy.
+
+Komodo clones `niklasarnitz/lutheranlibrary`, runs the Dockerfile's tests and
+typesets the books before replacing the running container. Failed builds leave
+the existing site running. BuildKit retains the typesetting cache between
+builds. No GitHub Actions image build, registry credentials, manual source copy,
+database or runtime secrets are needed.
+
+The stack's declarative settings live in `niklasarnitz/ops`,
+`komodo/stacks.toml`: `files_on_host = false`, `run_build = true`,
+`auto_pull = false`, `webhook_enabled = true` and
+`webhook_force_deploy = true`. The last setting ensures content-only pushes
+rebuild even when `compose.yaml` is unchanged. Keep the Compose project name
+`openlutheranlibrary` and its existing Traefik router names.
+
+To roll back, revert the unwanted commit on `main` and push; Komodo rebuilds
+that revision. The webhook secret is private Komodo/GitHub configuration and
+must never be committed.
+
 ## Layout
 
 - `site/build.py`: frontmatter, cache, pages
