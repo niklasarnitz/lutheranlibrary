@@ -5,6 +5,8 @@ import unittest
 import zipfile
 from pathlib import Path
 
+import lxml.html
+
 import build
 from reader import reader_html
 from typeset import set_opf_metadata
@@ -122,6 +124,34 @@ class ReaderTests(unittest.TestCase):
         self.assertIn('alt="Danket dem HErrn"', html)
         self.assertEqual(html.count("src="), 1)
         self.assertNotIn("onerror", html)
+
+    def test_footnote_copies_keep_scores_and_following_commentary(self):
+        for wrapped in (True, False):
+            for long in (True, False):
+                with self.subTest(wrapped=wrapped, long=long):
+                    commentary = "Following commentary. " * (80 if long else 1)
+                    raw = f"""<html><body><p>Text<span class='footnote-mark'>
+                        <a href='#fn1' id='fn1-bk'>1</a></span></p>
+                        <p>More<span class='footnote-mark'><a href='#fn2' id='fn2-bk'>2</a></span></p>
+                        <div class='footnotes'><aside class='footnotetext'>
+                        <p><span class='footnote-mark'><a href='#fn1-bk' id='fn1'>1</a></span>Introduction.</p>
+                        <div class='notensatz'><img src='music/160-03.svg' alt='Five underlays'></div>
+                        <span>{commentary}</span></aside><aside class='footnotetext'>
+                        <p><span class='footnote-mark'><a href='#fn2-bk' id='fn2'>2</a></span>Other note.</p>
+                        </aside></div></body></html>"""
+                    if not wrapped:
+                        raw = raw.replace("<aside class='footnotetext'>", "").replace("</aside>", "")
+                    else:
+                        second = "<span class='footnote-mark'><a href='#fn2-bk' id='fn2'>2</a></span>Other note."
+                        raw = raw.replace(f"<p>{second}</p>", second)
+                    rendered, _ = reader_html(raw)
+                    doc = lxml.html.fromstring(rendered)
+                    note = doc.cssselect(".note-block" if long else ".sidenote")[0]
+                    self.assertEqual(note.xpath(".//img/@src"), ["music/160-03.svg"])
+                    self.assertIn("Introduction.", note.text_content())
+                    self.assertIn(commentary.strip(), note.text_content())
+                    self.assertNotIn("Other note.", note.text_content())
+                    self.assertEqual(doc.cssselect('.sidenote[data-note="2"]')[0].text_content().strip(), "Other note.")
 
     def test_epub_metadata_replaces_tex4ht_defaults(self):
         opf = "<metadata><dc:title>main</dc:title><dc:language>en-US</dc:language></metadata>"

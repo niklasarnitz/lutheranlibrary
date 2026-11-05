@@ -83,7 +83,21 @@ def build_sidenotes(body):
         notes = []
         # Newer TeX4ht wraps each note in <aside class="footnotetext">; older releases (Debian's)
         # emit bare paragraphs. Either way a note starts at the paragraph holding the back link.
-        for paragraph in container.iter("p"):
+        # Scores and their following commentary can be siblings of those paragraphs.
+        parts = []
+        for element in container:
+            if "footnotetext" in element.get("class", "").split():
+                if any(child.tag == "p" for child in element):
+                    parts.extend(element)
+                else:
+                    # Some notes contain only inline siblings, including the back link itself.
+                    paragraph = lxml.html.Element("p")
+                    paragraph.text = element.text
+                    paragraph.extend(copy.deepcopy(child) for child in element)
+                    parts.append(paragraph)
+            else:
+                parts.append(element)
+        for paragraph in parts:
             back = paragraph.cssselect("span.footnote-mark a[href]")
             if back:
                 notes.append((back[0].get("id"), back[0].text_content().strip(), [paragraph]))
@@ -124,8 +138,9 @@ def build_sidenotes(body):
                     old.drop_tree()
                 if i:
                     side.append(lxml.html.Element("br"))
-                part.tag = "span"
-                part.attrib.pop("class", None)
+                if part.tag == "p":
+                    part.tag = "span"
+                    part.attrib.pop("class", None)
                 side.append(part)
             flatten_to_inline(side)
             side.tail = mark_span.tail
