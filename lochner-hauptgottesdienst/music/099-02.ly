@@ -22,13 +22,13 @@
         \key f \major
         \cadenzaOn
         \override Score.SpacingSpanner.base-shortest-duration = #(ly:make-moment 1 2)
-        g'1 bes' bes' bes' bes' bes' bes' a' g' bes' bes' bes' \bar "||"
-        g' bes' \bar "|."
+        g'1 bes' bes' bes' bes' bes'\breve bes'1 a' g' bes' bes' bes'\breve \bar "|"
+        g'1 bes'
       }
     >>
     \new Lyrics \lyricsto "melody" {
       Wahr -- haft wür -- dig und recht, bil -- lig und heil -- sam ist's,
-      daß wir
+      daß "wir &c."
     }
   >>
   \layout {

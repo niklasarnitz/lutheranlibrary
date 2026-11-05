@@ -21,8 +21,8 @@
         \clef treble
         \cadenzaOn
         \override Score.SpacingSpanner.base-shortest-duration = #(ly:make-moment 1 2)
-        g'1 g' g' e' g' \bar "||"
-        g' g' g' e' g' g' \bar "|."
+        g'1 g' g' e' g'\breve \bar "|"
+        g'1 g' g' e' g' g'\breve \bar "||"
       }
     >>
     \new Lyrics \lyricsto "melody" {

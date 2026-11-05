@@ -52,7 +52,7 @@ TEXINPUTS=../site/tex//: lualatex main.tex
 \frontmatter                 % roman page numbers
 \begin{titelseite} … \end{titelseite}   % each printed title page
 \chapter{Vorwort}
-\chapter{Inhaltsübersicht}  % the original's contents, see §5
+\tableofcontents            % the edition's authoritative contents
 \mainmatter                  % arabic page numbers from 1
 \part{Der evangelische Geistliche}      % a division title page of the original
 \chapter{A. Einleitendes}
@@ -69,8 +69,8 @@ TEXINPUTS=../site/tex//: lualatex main.tex
 - Include `\tableofcontents` once, near the beginning of every edition. It
   generates linked entries and the edition's actual page numbers from the
   structural headings, down to `\subsection`; compile repeatedly until those
-  numbers settle. Keep this navigational contents separate from the original's
-  transcribed contents (§5), whose numbers refer to the historical printing.
+  numbers settle. This is the sole authoritative contents list. Omit the
+  historical printing's contents and obsolete page numbers (see §5).
 - Map the original's hierarchy onto the levels from the top: a division with
   its own title page → `\part`; the largest regular division → `\chapter`;
   then `\section`, `\subsection`. Equal levels of the original get equal
@@ -78,7 +78,8 @@ TEXINPUTS=../site/tex//: lualatex main.tex
 - In a combined multi-volume edition, reserve `\part` for each volume, then
   use `\chapter` for its divisions, `\section` for their topics, and
   `\subsection` for the next level. Preserve each printed title page, preface,
-  and original contents. The enclosing `main.tex` owns `\frontmatter`,
+  and the original text apart from historical contents lists. The enclosing
+  `main.tex` owns `\frontmatter`,
   `\tableofcontents`, and a single `\mainmatter`; volume fragments keep
   continuous edition pagination while their source-page markers retain the
   original volume-local scan numbers.
@@ -150,22 +151,11 @@ TEXINPUTS=../site/tex//: lualatex main.tex
   ```
 
   Title-page lines keep their final full stops (they are a transcription).
-- The original's table of contents is kept, with its page numbers, as:
-
-  ```latex
-  \chapter{Inhaltsübersicht}
-  \begin{originalinhalt}
-  \inhaltsgruppe{A. Einleitendes.}
-  \inhaltsseite                      % the "Seite" column label, if printed
-  \inhaltseintrag{I. Einige Bemerkungen über die Vorbereitung zum geistlichen Amte}{27}
-  \inhaltsgruppe{Anhang.}
-  \inhaltseintrag{Erinnerungen an Pfarrersfrauen}{277}
-  \end{originalinhalt}
-  ```
-
-  Group lines without a page number are `\inhaltsgruppe`; entries with a page
-  number are `\inhaltseintrag{text}{page}`. An entry without a page number
-  that is not a group heading: `\inhaltseintrag{text}{}`.
+- Omit the original's contents list and its historical page numbers; the
+  generated `\tableofcontents` replaces it in PDF, reader, and EPUB. Record the
+  omitted scan-page ranges in the edition's `source` metadata. Source markers
+  describe retained text: do not insert empty markers for omitted contents
+  pages or renumber the remaining scan pages to close those intentional gaps.
 - Datelines and signatures under a preface or letter: `unterschrift`
   environment, lines separated by `\\`.
 
@@ -232,6 +222,6 @@ PDF-only code in `\ifoll@pdf`).
 2. Every `% p. n` has become `\quellseite{n}`, in ascending order.
 3. Headings: unstarred, no final full stop, short form where long.
 4. The generated contents contains the expected divisions and topics, with
-   working links and correct edition page numbers; original contents remains
-   separate with its historical page numbers.
+   working links and correct edition page numbers; no historical contents list
+   remains alongside it, and omitted source pages are documented.
 5. `python3 site/build.py` builds the book; check the PDF, reader, and EPUB.

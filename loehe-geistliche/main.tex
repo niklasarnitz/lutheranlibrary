@@ -1,36 +1,38 @@
 % ---
 % title: Der evangelische Geistliche
-% subtitle: Zweites Bändchen
+% subtitle: Erstes und zweites Bändchen
 % author: Wilhelm Löhe
 % year: 1876
-% slug: loehe-der-evangelische-geistliche-2
+% slug: loehe-der-evangelische-geistliche
 % description: >-
-%   Löhes Pastoraltheologie, Zweites Bändchen: Ansichten aus den verschiedenen
-%   Arbeitsgebieten des geistlichen Amtes. 3., mit der 2. gleichlautende
-%   Auflage, Gütersloh: C. Bertelsmann 1876.
+%   Löhes Pastoraltheologie in einer Gesamtausgabe beider Bändchen: die
+%   persönlichen Verhältnisse des Pfarrers und die verschiedenen Arbeitsgebiete
+%   des geistlichen Amtes, mit den Einleitungen und Anhängen beider Bände.
+%   Erstes Bändchen: 4. Auflage, 1872; zweites Bändchen: 3. Auflage, 1876.
+%   Gütersloh: C. Bertelsmann.
 % language: de
 % topics: [Pastoraltheologie]
 % source: >-
 %   Transkription nach Scan: Folio-OCR (ocr.arnitz.org), bereinigt; unsichere
-%   Lesungen sind grau mit „?“ markiert. "% p. n" im Quelltext = Scan-Seite n.
+%   Lesungen sind grau mit „?“ markiert. Seitenmarken am Rand = Scan-Seiten
+%   des jeweiligen Bändchens. Maßgeblich ist das aus der LaTeX-Gliederung
+%   erzeugte gemeinsame Inhaltsverzeichnis. Die ursprünglichen Inhaltslisten
+%   (Scan-Seiten 12–13 im ersten, 15–17 im zweiten Bändchen) sind ausgelassen.
 % rights: "Gemeinfrei (Public Domain): erschienen vor 1900, Verfasser gest. 1872."
 % ---
-% Wilhelm Löhe: Der evangelische Geistliche, Zweites Bändchen (3. Aufl., Gütersloh 1876)
-% Text: Folio OCR (ocr.arnitz.org), bereinigt; "% p. n" = Scan-Seite n.
-\documentclass[11pt,a5paper,twoside]{article}
-\usepackage[ngerman]{babel}
-\usepackage{fontspec}
-\setmainfont{Libertinus Serif}
-\usepackage[autostyle]{csquotes}
-\usepackage[inner=18mm,outer=28mm,top=20mm,bottom=22mm,marginparwidth=20mm,marginparsep=3mm]{geometry}
-% Randglossen: \marginpar weicht Kollisionen aus (marginnote stapelt sie übereinander)
-\newcommand{\marginnote}[1]{\marginpar{\footnotesize\itshape\raggedright #1}}
-\usepackage[perpage,symbol*]{footmisc}
-\usepackage{xcolor}
-\newcommand{\unsicher}[1]{\textcolor{gray}{#1}\textsuperscript{\textcolor{gray}{?}}}
-\setcounter{secnumdepth}{0}
-\raggedbottom
-\emergencystretch=2em
+\documentclass{oll-book}
 \begin{document}
-\input{body}
+\frontmatter
+\begin{titelseite}
+{\LARGE Der evangelische Geistliche.}\\[1.5em]
+Wilhelm Löhe\\[1.5em]
+{\Large Erstes und zweites Bändchen.}\\[1.5em]
+Gütersloh, 1872 und 1876.
+\end{titelseite}
+\tableofcontents
+\mainmatter
+\part{Erstes Bändchen}
+\input{erstes}
+\part{Zweites Bändchen}
+\input{zweites}
 \end{document}

@@ -1,7 +1,7 @@
 \version "2.24.3"
 \language "english"
 
-#(set-global-staff-size 14)
+#(set-global-staff-size 18)
 
 \header { tagline = ##f }
 \paper {
@@ -33,7 +33,7 @@
   }
   \new Lyrics \lyricsto "chant" {
     Wohl de -- nen, die oh -- ne __ \skip 1 \skip 1 \skip 1 \skip 1 Wan -- del le -- ben,
-    die im Ge -- setz des __ \skip 1 \skip 1 \skip 1 \skip 1 \skip 1 HErr -- ren wan __ deln.
+    die im Ge -- setz des __ \skip 1 \skip 1 \skip 1 \skip 1 \skip 1 HEr -- ren wan __ deln.
   }
   >>
   \layout {

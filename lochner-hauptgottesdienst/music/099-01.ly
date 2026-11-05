@@ -21,13 +21,13 @@
         \clef treble
         \cadenzaOn
         \override Score.SpacingSpanner.base-shortest-duration = #(ly:make-moment 1 2)
-        g'1 g' g' g' g' g' e' g'\fermata \break
-        e' g' g' g' g' g' g' g' g' g' g' fis' e' g' g'\fermata \bar "|."
+        g'1 g' g' g' g' g' e' g'\breve\fermata \bar "|" \break
+        e'1 g' g' g' g' g' g' g' g' g' g' fis' e' g' g'\breve\fermata \bar "|"
       }
     >>
     \new Lyrics \lyricsto "melody" {
       All -- mäch -- ti -- ger e -- wi -- ger Gott,
-      der du die gan -- ze Chris -- ten -- heit hei -- li -- gest und re -- gie -- rest
+      der du die gan -- ze Chris -- ten -- heit hei -- li -- gest und re -- gie -- "rest &c."
     }
   >>
   \layout {

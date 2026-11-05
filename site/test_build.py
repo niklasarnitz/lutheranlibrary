@@ -88,6 +88,26 @@ class ReaderTests(unittest.TestCase):
         self.assertIn('data-note="*"><span><span style="font-size:90%;">Eine Anmerkung.</span></span>', html)
         self.assertIn('id="nb-fn2x0"', html)
 
+    def test_heading_footnotes_stay_in_body_but_not_contents_labels(self):
+        raw = """<html><body>
+            <h2 class='chapterHead' id='melodien'>Zugabe<span class='footnote-mark'>
+            <a href='#fn1' id='fn1-bk'><sup>16</sup></a></span> einiger
+            <em>Melodien</em><br />Anhang</h2>
+            <div class='footnotes'><aside class='footnotetext' role='doc-footnote'>
+            <p><span class='footnote-mark'><a href='#fn1-bk' id='fn1'><sup>16</sup></a></span>
+            Nur die fehlenden Melodien werden mitgetheilt.</p></aside></div>
+            </body></html>"""
+        for wrapped in (True, False):
+            with self.subTest(wrapped=wrapped):
+                source = raw if wrapped else raw.replace(
+                    "<aside class='footnotetext' role='doc-footnote'>", "").replace("</aside>", "")
+                html, toc = reader_html(source)
+                self.assertEqual(toc, [{"level": 0, "id": "melodien",
+                                        "title": "Zugabe einiger Melodien · Anhang"}])
+                self.assertIn('href="#fn1" id="fn1-bk"><sup>16</sup>', html)
+                self.assertIn('class="sidenote" role="note" data-note="16"', html)
+                self.assertIn('Nur die fehlenden Melodien werden mitgetheilt.', html)
+
     def test_links_into_the_output_page_become_anchors(self):
         html, _ = reader_html("<html><body><p><a href='main.html#x1-2000'>S. 3</a></p></body></html>")
         self.assertIn('href="#x1-2000"', html)

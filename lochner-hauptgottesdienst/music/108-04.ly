@@ -1,7 +1,7 @@
 \version "2.24.3"
 \language "english"
 
-#(set-global-staff-size 14)
+#(set-global-staff-size 18)
 
 \header { tagline = ##f }
 \paper {
@@ -19,9 +19,9 @@
   \new Staff \with { \omit TimeSignature } {
     \clef treble
     \cadenzaOn
-    \override Score.SpacingSpanner.base-shortest-duration = #(ly:make-moment 1 2)
+    \override Score.SpacingSpanner.base-shortest-duration = #(ly:make-moment 1 1)
     \omit Stem
-    g'1 g'1 g'1 g'1 g'1 g'1 g'1 g'1 g'1 g'1 \bar "|"
+    a'1 a'1 a'1 a'1 a'1 a'1 a'1 a'1 a'1 a'1 \bar "|"
     g'1 f'1 g'1( a'1) g'1 \bar "||"
   }
   \layout { ragged-right = ##t }

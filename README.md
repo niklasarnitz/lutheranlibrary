@@ -45,7 +45,8 @@ the generated table of contents and links settle.
 Löhe's **Der evangelische Geistliche** is one combined edition in
 `loehe-geistliche/`: `erstes.tex` contains the first Bändchen (1872),
 `zweites.tex` the second (1876). Its shared `main.tex` provides volume divisions
-and a linked table of contents; both historical contents lists are preserved.
+and the authoritative linked table of contents generated from LaTeX headings;
+the two historical contents lists are omitted.
 The catalog URL is `/works/loehe-der-evangelische-geistliche/`.
 
 Directories without frontmatter are ignored. Uncertain readings use

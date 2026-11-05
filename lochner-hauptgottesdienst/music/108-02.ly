@@ -1,7 +1,7 @@
 \version "2.24.3"
 \language "english"
 
-#(set-global-staff-size 14)
+#(set-global-staff-size 18)
 
 \header { tagline = ##f }
 \paper {

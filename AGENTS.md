@@ -1,5 +1,8 @@
 # Editing the library
 
+- **Before any work in this checkout, read [FOLIO.local.md](FOLIO.local.md).**
+  This read-first pointer is local-only: keep it uncommitted when staging other
+  changes. The runbook covers Folio access, retrieval and scan-based Nacharbeit.
 - Before transcribing, correcting OCR, or changing a book's LaTeX, read
   [TYPESETTING.md](TYPESETTING.md). It is the source of truth for transcription
   fidelity, structural markup, notes, source-page markers, and typesetting.
@@ -11,8 +14,9 @@
   and record substantive editorial decisions in the book's review record.
 - Use `oll-book` and actual unstarred `\part`, `\chapter`, `\section`,
   `\subsection`, and `\subsubsection` commands for the original hierarchy.
-  Use `\tableofcontents` for a linked contents list generated from those
-  headings, separate from any transcribed original contents and page numbers.
+  Use `\tableofcontents` as the edition's sole authoritative contents list,
+  generated from those headings. Omit historical contents lists and their old
+  page numbers; document the omitted source pages in the edition metadata.
   In a combined edition, make each volume a `\part` and nest its divisions
   consistently below it; keep the source fragments inside the book directory
   so the downloadable LaTeX archive is self-contained.

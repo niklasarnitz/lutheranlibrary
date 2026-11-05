@@ -160,8 +160,10 @@ def attach_page_markers(body):
 
 
 def heading_title(heading):
-    """Heading text with its line breaks (\\\\ in the title) shown as separators."""
+    """Heading text without notes, with line breaks (\\\\) shown as separators."""
     heading = copy.deepcopy(heading)
+    for note in heading.cssselect(".footnote-mark, .sidenote"):
+        note.drop_tree()
     for br in heading.iter("br"):
         br.tail = " · " + (br.tail or "")
     return " ".join(heading.text_content().split()).strip(" ·")

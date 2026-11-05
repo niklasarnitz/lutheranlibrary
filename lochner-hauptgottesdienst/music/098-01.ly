@@ -21,7 +21,7 @@
         \clef treble
         \cadenzaOn
         \override Score.SpacingSpanner.base-shortest-duration = #(ly:make-moment 1 2)
-        g'1 g' g' g' g' \bar "|."
+        g'1 g' g' g' g'\breve \bar "||"
       }
     >>
     \new Lyrics \lyricsto "melody" { Der HErr sei mit euch! }
