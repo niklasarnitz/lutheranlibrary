@@ -35,7 +35,6 @@ PIPELINE_VERSION = "1"
 PIPELINE_FILES = [SITE / "typeset.py", SITE / "reader.py", *sorted((SITE / "tex").iterdir())]
 FRONTMATTER = re.compile(r"\A% ---[ \t]*\n((?:%.*\n)*?)% ---[ \t]*\n")
 SLUG = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
-FONTS = {"libertinus": "Libertinus", "pagella": "TeX Gyre Pagella", "lmodern": "Latin Modern"}
 LANGUAGES = {"de": "German", "en": "English", "la": "Latin", "el": "Greek"}
 
 
@@ -372,7 +371,7 @@ def render_site(books, editions, out):
     for magazine in magazines.values():
         magazine["issues"].sort(key=lambda b: b.issue_date, reverse=True)
     env.globals.update(
-        static=lambda name: asset_url(static, name), topic_slug=slugify, languages=LANGUAGES, fonts=FONTS,
+        static=lambda name: asset_url(static, name), topic_slug=slugify, languages=LANGUAGES,
         topics=sorted(topics.values(), key=lambda t: t["name"].lower()), today=date.today(),
     )
     books = sorted(books, key=lambda b: (b.author.split()[-1].lower() if b.author else "", b.title.lower(),

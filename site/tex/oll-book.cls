@@ -72,7 +72,7 @@
 % part of the title text. They still reach the bookmarks and the reader's
 % table of contents, so use the unstarred commands.
 \setcounter{secnumdepth}{-2}
-\setcounter{tocdepth}{1}
+\setcounter{tocdepth}{2}
 \ifoll@pdf
   \RequirePackage{titlesec}
   \titleformat{\part}[display]{\centering\normalfont\LARGE}{}{0pt}{}

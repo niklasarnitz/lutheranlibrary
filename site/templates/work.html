@@ -3,8 +3,8 @@
 {% block description %}{{ book.description or book.full_title }}{% endblock %}
 {% block head %}<link rel="stylesheet" href="{{ static('reader.css') }}"><script src="{{ static('reader.js') }}" defer></script>{% endblock %}
 {% block bodyclass %}reading{% endblock %}
-{% block content %}<div class="breadcrumbs">{% if book.magazine %}<a href="/magazines/">Magazines</a> / <a href="/magazines/{{ book.magazine_slug }}/">{{ book.magazine }}</a>{% if book.issue %} / <a href="{{ book.issue.url }}">Vol. {{ book.volume }}, No. {{ book.number }} ({{ book.issue_date }})</a>{% endif %}{% else %}<a href="/">The collection</a>{% endif %}</div>
-<header class="reading-heading"><p class="metadata">{{ book.kind_label }}{% if book.issue_date %} / <time datetime="{{ book.issue_date }}">{{ book.issue_date }}</time> / Vol. {{ book.volume }}, No. {{ book.number }}{% elif book.year %} / {{ book.year }}{% endif %} / {{ languages.get(book.language, book.language) }}{% if book.source_pages %} / Source pp. {{ book.source_pages }}{% endif %}</p>
+{% block content %}{% if book.magazine %}<div class="breadcrumbs"><a href="/magazines/">Magazines</a> / <a href="/magazines/{{ book.magazine_slug }}/">{{ book.magazine }}</a>{% if book.issue %} / <a href="{{ book.issue.url }}">Vol. {{ book.volume }}, No. {{ book.number }} ({{ book.issue_date }})</a>{% endif %}</div>{% endif %}
+<header class="reading-heading">{% if book.magazine %}<p class="metadata">{{ book.kind_label }}{% if book.issue_date %} / <time datetime="{{ book.issue_date }}">{{ book.issue_date }}</time> / Vol. {{ book.volume }}, No. {{ book.number }}{% elif book.year %} / {{ book.year }}{% endif %} / {{ languages.get(book.language, book.language) }}{% if book.source_pages %} / Source pp. {{ book.source_pages }}{% endif %}</p>{% endif %}
 <h1>{{ book.title }}</h1>{% if book.subtitle %}<p class="subtitle">{{ book.subtitle }}</p>{% endif %}
 {% if book.author %}<p class="byline">{{ book.author }}</p>{% endif %}
 <div class="tags">{% for t in book.topics %}<a href="/topics/{{ topic_slug(t) }}/">{{ t }}</a>{% endfor %}</div></header>
@@ -13,7 +13,6 @@
 {% endif %}
 <div class="reading-toolbar">
   <div><a class="button" href="{{ book.slug }}.pdf" download>Download {% if book.installments %}combined {% endif %}PDF</a><a class="button secondary" href="{{ book.slug }}.epub" download>Download {% if book.installments %}combined {% endif %}EPUB</a><a href="{{ book.slug }}.pdf" target="_blank" rel="noopener">Page view{% if book.pages %} ({{ book.pages }} pages){% endif %}</a><a href="{{ book.slug }}-latex.zip" download>LaTeX source</a></div>
-  <p class="typeset-note">Typeset with LuaLaTeX in {{ fonts.get(book.font, book.font) }}</p>
 </div>
 {% if book.installments %}
 <section class="issue-articles" aria-labelledby="installments-heading">

@@ -24,6 +24,9 @@ spelling and structure are kept; its layout is not imitated.
 % Wilhelm Löhe: Der evangelische Geistliche, Erstes Bändchen (4. Aufl., Gütersloh 1872)
 \documentclass{oll-book}
 \begin{document}
+\frontmatter
+\tableofcontents
+\mainmatter
 \input{body}
 \end{document}
 ```
@@ -63,10 +66,22 @@ TEXINPUTS=../site/tex//: lualatex main.tex
 - Use the **unstarred** commands. The class suppresses LaTeX's numbering;
   the original's numbering (`A.`, `I.`, `§. 12`, `36.`) is written into the
   title. Unstarred headings reach the PDF bookmarks and the reader's contents.
+- Include `\tableofcontents` once, near the beginning of every edition. It
+  generates linked entries and the edition's actual page numbers from the
+  structural headings, down to `\subsection`; compile repeatedly until those
+  numbers settle. Keep this navigational contents separate from the original's
+  transcribed contents (§5), whose numbers refer to the historical printing.
 - Map the original's hierarchy onto the levels from the top: a division with
   its own title page → `\part`; the largest regular division → `\chapter`;
   then `\section`, `\subsection`. Equal levels of the original get equal
   commands throughout the book.
+- In a combined multi-volume edition, reserve `\part` for each volume, then
+  use `\chapter` for its divisions, `\section` for their topics, and
+  `\subsection` for the next level. Preserve each printed title page, preface,
+  and original contents. The enclosing `main.tex` owns `\frontmatter`,
+  `\tableofcontents`, and a single `\mainmatter`; volume fragments keep
+  continuous edition pagination while their source-page markers retain the
+  original volume-local scan numbers.
 - No `\clearpage`, `\newpage`, `\vspace`, `\bigskip` or `center` around
   headings: `\part` and `\chapter` start a new page themselves.
 - Heading text: as printed, but **without the final full stop** (`?` and `!`
@@ -216,4 +231,7 @@ PDF-only code in `\ifoll@pdf`).
    log (fix with a better line break of the source, not with `\\`).
 2. Every `% p. n` has become `\quellseite{n}`, in ascending order.
 3. Headings: unstarred, no final full stop, short form where long.
-4. `python3 site/build.py` builds the book; check the PDF and the reader.
+4. The generated contents contains the expected divisions and topics, with
+   working links and correct edition page numbers; original contents remains
+   separate with its historical page numbers.
+5. `python3 site/build.py` builds the book; check the PDF, reader, and EPUB.

@@ -39,7 +39,14 @@ top of `main.tex`:
 Every book uses the library's document class `oll-book`
 (`site/tex/oll-book.cls`) and follows [TYPESETTING.md](TYPESETTING.md), so all
 books share one design and one markup standard. Compile a book by hand with
-`TEXINPUTS=../site/tex//: lualatex main.tex` from its directory.
+`TEXINPUTS=../site/tex//: lualatex main.tex` from its directory, repeating until
+the generated table of contents and links settle.
+
+Löhe's **Der evangelische Geistliche** is one combined edition in
+`loehe-geistliche/`: `erstes.tex` contains the first Bändchen (1872),
+`zweites.tex` the second (1876). Its shared `main.tex` provides volume divisions
+and a linked table of contents; both historical contents lists are preserved.
+The catalog URL is `/works/loehe-der-evangelische-geistliche/`.
 
 Directories without frontmatter are ignored. Uncertain readings use
 `\unsicher{…}`; source page markers `\quellseite{n}` appear in the reader's

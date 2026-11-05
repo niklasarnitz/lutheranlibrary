@@ -25,7 +25,6 @@
   --rule: #e3dccf;
   --rubric: #9b2c1f;
   --measure: 33em;
-  --outer: 0em;
   --inner: 3.2em;
   background: #efebe3;
 }
@@ -41,10 +40,9 @@
 .reading main { max-width: 1500px; margin: 0 auto; }
 .reading .reading-heading, .reading .breadcrumbs, .reading .reading-toolbar, .reading .edition-note, .edition-notice { max-width: 62rem; margin-left: auto; margin-right: auto; }
 .reading .reading-toolbar { margin-bottom: 32px; }
-.typeset-note { margin: 0; color: var(--muted); font-style: italic; font-family: Georgia, serif; }
 .edition-notice { background: #fff6dc; border-left: 3px solid var(--gold); padding: 10px 16px; font-size: 0.9rem; }
 
-/* ---- Layout: contents column, page with inner (source page) and outer (notes) margins ---- */
+/* ---- Layout: contents column and page with room for source page markers ---- */
 .book { display: grid; grid-template-columns: minmax(0, 1fr); justify-content: center; gap: 40px; align-items: start; }
 .book-toc { display: none; }
 .book-toc-compact { box-sizing: border-box; width: 100%; max-width: 62rem; margin: 0 auto 20px; background: white; border: 1px solid var(--line); border-radius: 4px; padding: 10px 16px; }
@@ -62,8 +60,7 @@
   box-sizing: content-box;
   max-width: var(--measure);
   margin: 0 auto;
-  padding: 3.5em var(--outer) 4.5em var(--inner);
-  padding-right: calc(var(--outer) + 3.2em);
+  padding: 3.5em 3.2em 4.5em var(--inner);
   background: var(--paper);
   color: var(--text);
   border: 1px solid #ddd5c6;
@@ -84,8 +81,8 @@
 .font-lmodern .book-page { font-family: "OLL Latin Modern", "Latin Modern Roman", "CMU Serif", Georgia, serif; }
 
 @media (min-width: 1120px) {
-  .reading { --outer: 13.5em; }
-  .book-page { padding-right: calc(var(--outer) + 1em); }
+  .reading { --measure: 44.3em; }
+  .book-page p { max-width: none; }
 }
 @media (min-width: 1440px) {
   .book { grid-template-columns: 15rem minmax(0, max-content); }
@@ -220,13 +217,13 @@
 }
 .book-page:lang(de) .quellseite::before { content: "S.\2009" attr(data-page); }
 
-/* Wide: notes live in the outer margin, as in the printed book */
+/* Wide: notes take space beside their paragraph, not along the entire page. */
 @media (min-width: 1120px) {
   .book-page .sidenote, .book-page .marginpar {
-    float: right; clear: right; width: calc(var(--outer) - 1.5em); margin-right: calc(-1 * var(--outer) + 0.2em);
+    float: right; clear: right; width: 12em; margin-left: 1.5em;
     margin-top: 0.25em; margin-bottom: 0.6em; position: relative;
   }
-  .book-page .marginpar { border-left: 1.5px solid var(--rule); padding-left: 0.7em; margin-right: calc(-1 * var(--outer) - 0.5em); }
+  .book-page .marginpar { border-left: 1.5px solid var(--rule); padding-left: 0.7em; }
   .book-page .footnotes { display: none; }
 }
 /* Narrow: the note opens under its paragraph when the mark is tapped (reader.js) */
