@@ -29,14 +29,8 @@
   background: #efebe3;
 }
 
-/* Reading pages trade the site sidebar for a horizontal bar, so the book has room. */
-.reading .shell { display: block; max-width: none; }
-.reading .sidebar { flex-direction: row; align-items: center; padding: 0 clamp(12px, 3vw, 40px); }
-.reading .sidebar nav { flex-direction: row; gap: 0; overflow-x: auto; }
-.reading .sidebar nav a { padding: 13px 14px; white-space: nowrap; border-radius: 0; font-size: 0.9rem; }
-.reading .sidebar nav a[aria-current] { box-shadow: inset 0 -3px var(--gold); }
-.reading .sidebar-bottom { display: flex; gap: 20px; padding: 0; font-size: 0.85rem; }
-.reading .sidebar-bottom a { margin: 0; white-space: nowrap; }
+/* Reading pages give the book and its contents the full available width. */
+.reading .shell { max-width: none; }
 .reading main { max-width: 1500px; margin: 0 auto; }
 .reading .reading-heading, .reading .breadcrumbs, .reading .reading-toolbar, .reading .edition-note, .edition-notice { max-width: 62rem; margin-left: auto; margin-right: auto; }
 .reading .reading-toolbar { margin-bottom: 32px; }
@@ -240,7 +234,6 @@
   .book-page .quellseite { border-left-color: var(--soft); }
   .book-page blockquote { margin: 0.6em 1em; }
   .book-page div.verse { margin-left: 1em; }
-  .reading .sidebar-bottom { display: none; }
 }
 
 .book-page .notensatz { margin: 1.25em 0; text-align: center; break-inside: avoid; }

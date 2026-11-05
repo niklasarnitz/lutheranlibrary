@@ -127,48 +127,40 @@ svg {
   color: var(--blue);
 }
 .shell {
-  display: grid;
-  grid-template-columns: 210px minmax(0, 1fr);
-  min-height: calc(100vh - 72px);
+  min-height: calc(100vh - 120px);
   max-width: 1680px;
   margin: auto;
 }
-.sidebar {
+.site-nav {
   background: var(--blue);
   color: #e2eaf4;
-  padding: 24px 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  padding: 0 clamp(12px, 3vw, 40px);
 }
-.sidebar nav {
+.desktop-links {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
 }
-.sidebar a {
+.site-nav a {
+  display: block;
   color: #e2eaf4;
   text-decoration: none;
+  padding: 13px 14px;
+  font-size: 0.9rem;
+  white-space: nowrap;
 }
-.sidebar nav a {
-  padding: 13px 18px;
-  border-radius: 4px;
-}
-.sidebar nav a:hover,
-.sidebar nav a[aria-current] {
+.site-nav a:hover,
+.site-nav a[aria-current] {
   background: #ffffff16;
   color: white;
 }
-.sidebar nav a[aria-current] {
-  box-shadow: inset 3px 0 var(--gold);
+.site-nav a[aria-current] {
+  box-shadow: inset 0 -3px var(--gold);
 }
-.sidebar-bottom {
-  padding: 32px 18px 5px;
-  font-size: 0.9rem;
+.desktop-links .nav-about {
+  margin-left: auto;
 }
-.sidebar-bottom a {
-  display: block;
-  margin: 16px 0;
+.mobile-menu {
+  display: none;
 }
 main {
   padding: 32px clamp(24px, 4vw, 56px);
@@ -475,20 +467,9 @@ main {
 .skip:focus {
   top: 10px;
 }
-@media (min-width: 1680px) {
-  .sidebar {
-    border-radius: 0 0 0 8px;
-  }
-}
 @media (max-width: 1050px) {
-  .shell {
-    grid-template-columns: 190px minmax(0, 1fr);
-  }
   .masthead {
     padding: 0 28px;
-  }
-  .sidebar {
-    padding: 30px 12px;
   }
   main {
     padding: 32px 30px;
@@ -509,39 +490,49 @@ main {
 }
 @media (max-width: 700px) {
   .masthead {
-    height: 72px;
-    padding: 0 20px;
+    height: 64px;
+    padding: 0 16px;
   }
   .brand {
-    font-size: 1.3rem;
-    gap: 10px;
+    font-size: clamp(1rem, 5vw, 1.3rem);
+    gap: 8px;
   }
   .mark {
-    width: 32px;
-    height: 38px;
+    width: 26px;
+    height: 32px;
+    flex-shrink: 0;
   }
-  .shell {
+  .desktop-links {
+    display: none;
+  }
+  .site-nav {
+    padding: 0 16px;
+  }
+  .mobile-menu {
     display: block;
   }
-  .sidebar {
-    padding: 0 12px;
+  .mobile-menu summary {
+    padding: 14px 4px;
+    min-height: 48px;
+    cursor: pointer;
+    font-size: 0.9rem;
   }
-  .sidebar nav {
-    flex-direction: row;
-    gap: 0;
-    overflow-x: auto;
+  .mobile-menu[open] summary {
+    border-bottom: 1px solid #ffffff30;
   }
-  .sidebar nav a {
-    font-size: 0.85rem;
-    padding: 17px 12px;
-    white-space: nowrap;
-    border-radius: 0;
+  .mobile-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 8px 0 12px;
+    gap: 4px;
   }
-  .sidebar nav a[aria-current] {
-    box-shadow: inset 0 -3px var(--gold);
+  .mobile-links a {
+    min-height: 48px;
+    padding: 14px 12px;
+    white-space: normal;
   }
-  .sidebar-bottom {
-    display: none;
+  .mobile-links .nav-about {
+    grid-column: 1 / -1;
   }
   main {
     padding: 24px 20px;
@@ -602,7 +593,7 @@ main {
 }
 @media print {
   .masthead,
-  .sidebar,
+  .site-nav,
   .reading-toolbar,
   .breadcrumbs,
   .skip {

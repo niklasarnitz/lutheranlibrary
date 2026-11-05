@@ -16,18 +16,21 @@
     <span>OpenLutheran<span class="brand-last">Library</span></span>
   </a>
 </header>
-<div class="shell">
-<aside class="sidebar">
-  <nav aria-label="Library">
+{% macro library_links() %}
     <a {% if page == 'catalog' %}aria-current="page"{% endif %} href="/">Collection</a>
     <a {% if page == 'books' %}aria-current="page"{% endif %} href="/books/">Books</a>
     <a {% if page == 'magazines' %}aria-current="page"{% endif %} href="/magazines/">Magazines</a>
     <a {% if page == 'topics' %}aria-current="page"{% endif %} href="/topics/">Topical Index</a>
-  </nav>
-  <div class="sidebar-bottom">
-    <a {% if page == 'about' %}aria-current="page"{% endif %} href="/about/">About the library</a>
-  </div>
-</aside>
+    <a class="nav-about" {% if page == 'about' %}aria-current="page"{% endif %} href="/about/">About the library</a>
+{% endmacro %}
+<nav class="site-nav" aria-label="Library">
+  <div class="desktop-links">{{ library_links() }}</div>
+  <details class="mobile-menu">
+    <summary>Library menu</summary>
+    <div class="mobile-links">{{ library_links() }}</div>
+  </details>
+</nav>
+<div class="shell">
 <main id="main" tabindex="-1">{% block content %}{% endblock %}</main>
 </div>
 </body>

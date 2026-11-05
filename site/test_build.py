@@ -252,10 +252,11 @@ class BookTests(unittest.TestCase):
         for route, active in [("index.html", "/"), ("books/index.html", "/books/"),
                               ("magazines/index.html", "/magazines/"), ("topics/index.html", "/topics/")]:
             page = build.html.fromstring((out / route).read_text())
-            links = page.xpath('//nav[@aria-label="Library"]/a')
+            links = page.xpath('//nav[@aria-label="Library"]/div/a')
             self.assertEqual([(link.text, link.get("href")) for link in links],
                              [("Collection", "/"), ("Books", "/books/"),
-                              ("Magazines", "/magazines/"), ("Topical Index", "/topics/")])
+                              ("Magazines", "/magazines/"), ("Topical Index", "/topics/"),
+                              ("About the library", "/about/")])
             self.assertEqual([link.get("href") for link in links if link.get("aria-current") == "page"],
                              [active])
         books_page = build.html.fromstring((out / "books/index.html").read_text())
@@ -429,18 +430,27 @@ class BookTests(unittest.TestCase):
         self.assertIn('href="lochner.pdf" download', page)
         self.assertIn("font-pagella", page)
         self.assertIn("(12 pages)", page)
+        self.assertNotIn("The collection</a>", page)
+        self.assertNotIn("Book /", page)
+        self.assertNotIn("Typeset with LuaLaTeX", page)
         self.assertTrue((out / "works/lochner/lochner.epub").exists())
         with zipfile.ZipFile(out / "works/lochner/lochner-latex.zip") as archive:
             self.assertEqual(sorted(archive.namelist()), ["lochner/body.tex", "lochner/main.tex", "lochner/oll-book.cls"])
         catalog = (out / "index.html").read_text("utf-8")
         from lxml import html
-        for route, active in [("index.html", "/"), ("books/index.html", "/books/")]:
-            navigation = html.fromstring((out / route).read_text()).xpath('//nav[@aria-label="Library"]/a')
-            self.assertEqual([(link.text, link.get("href")) for link in navigation],
-                             [("Collection", "/"), ("Books", "/books/"),
-                              ("Magazines", "/magazines/"), ("Topical Index", "/topics/")])
-            self.assertEqual([link.get("href") for link in navigation if link.get("aria-current") == "page"],
-                             [active])
+        for route, active in [("index.html", "/"), ("books/index.html", "/books/"),
+                              ("about/index.html", "/about/"), ("works/lochner/index.html", None)]:
+            document = html.fromstring((out / route).read_text())
+            self.assertFalse(document.xpath('//aside[@class="sidebar"]'))
+            self.assertFalse(document.xpath('//details[@class="mobile-menu"]/@open'))
+            for layout in ("desktop-links", "mobile-links"):
+                navigation = document.xpath(f'//nav[@aria-label="Library"]//div[@class="{layout}"]/a')
+                self.assertEqual([(link.text, link.get("href")) for link in navigation],
+                                 [("Collection", "/"), ("Books", "/books/"),
+                                  ("Magazines", "/magazines/"), ("Topical Index", "/topics/"),
+                                  ("About the library", "/about/")])
+                self.assertEqual([link.get("href") for link in navigation if link.get("aria-current") == "page"],
+                                 [active] if active else [])
         books_page = html.fromstring((out / "books/index.html").read_text())
         self.assertEqual(books_page.xpath('//h1/text()'), ["Books"])
         self.assertEqual(books_page.xpath('//*[@class="work-row"]//h3/a/@href'), [book.url])
