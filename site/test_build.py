@@ -43,6 +43,23 @@ FRONTMATTER = """% ---
 \\end{document}
 """
 
+ISSUE_FRONTMATTER = """% ---
+% title: Der Lutheraner
+% kind: issue
+% magazine: Der Lutheraner
+% magazine_slug: der-lutheraner
+% issue_date: 1904-01-05
+% volume: 60
+% number: 1
+% rights: Gemeinfrei
+% source: Folio, nach Scan geprüft.
+% ---
+\\documentclass{oll-book}
+\\begin{document}
+\\input{articles/01-vorwort/body}
+\\end{document}
+"""
+
 
 class ReaderTests(unittest.TestCase):
     def test_reader_html_is_sanitized_and_book_shaped(self):
@@ -75,6 +92,17 @@ class ReaderTests(unittest.TestCase):
         html, _ = reader_html("<html><body><p><a href='main.html#x1-2000'>S. 3</a></p></body></html>")
         self.assertIn('href="#x1-2000"', html)
 
+    def test_music_images_keep_local_sources_and_accessible_descriptions(self):
+        html, _ = reader_html("""<html><body><div class='notensatz'>
+            <img src='music/096-01.svg' alt='Danket dem HErrn' onerror='steal()'>
+            <img src='https://tracker.example/pixel.png'>
+            <img src='../private.png'><img src='javascript:alert(1)'>
+            </div></body></html>""")
+        self.assertIn('src="music/096-01.svg"', html)
+        self.assertIn('alt="Danket dem HErrn"', html)
+        self.assertEqual(html.count("src="), 1)
+        self.assertNotIn("onerror", html)
+
     def test_epub_metadata_replaces_tex4ht_defaults(self):
         opf = "<metadata><dc:title>main</dc:title><dc:language>en-US</dc:language></metadata>"
         result = set_opf_metadata(opf, {"title": "A & B", "author": "Löhe", "language": "de"})
@@ -103,6 +131,36 @@ class BookTests(unittest.TestCase):
         self.assertEqual(book.topics, ["Liturgik", "Gottesdienst & Predigt"])
         self.assertEqual(book.description, "Zur Erhaltung des liturgischen Erbtheils erläutert.")
         self.assertEqual(build.slugify(book.topics[1]), "gottesdienst-predigt")
+
+    def test_score_assets_reach_the_reader_and_compilable_source_download(self):
+        source = self.book("music")
+        (source / "facsimiles").mkdir()
+        (source / "facsimiles/552.png").write_bytes(b"original score scan")
+        cached = self.root / "cache"
+        build.engrave_music(source, cached / "assets")
+        (source / "music").mkdir()
+        (source / "music/096-01.ly").write_text("\\score { g'1 }")
+        book = build.load_book(source)
+        (cached / "assets/music").mkdir(parents=True)
+        for name, data in {"book.pdf": b"%PDF", "book.epub": b"PK",
+                           "body.html": b'<div class="notensatz"><img src="music/096-01.svg"></div>',
+                           "toc.json": b"[]", "assets/music/096-01.pdf": b"%PDF score",
+                           "assets/music/096-01.svg": b'<svg xmlns="http://www.w3.org/2000/svg"/>'}.items():
+            (cached / name).write_bytes(data)
+        out = self.root / "public"
+        out.mkdir()
+        build.render_site([book], {book.slug: cached}, out)
+        published = out / "works/music"
+        self.assertEqual((published / "music/096-01.svg").read_bytes(),
+                         (cached / "assets/music/096-01.svg").read_bytes())
+        self.assertEqual((published / "facsimiles/552.png").read_bytes(), b"original score scan")
+        self.assertIn('src="music/096-01.svg"', (published / "index.html").read_text())
+        with zipfile.ZipFile(published / "music-latex.zip") as archive:
+            self.assertIn("music/music/096-01.ly", archive.namelist())
+            self.assertEqual(archive.read("music/music/096-01.pdf"), b"%PDF score")
+            self.assertEqual(archive.read("music/facsimiles/552.png"), b"original score scan")
+            self.assertEqual(archive.namelist().count("music/facsimiles/552.png"), 1)
+            self.assertIn("music/oll-book.cls", archive.namelist())
 
     def test_directories_without_frontmatter_and_drafts_are_not_published(self):
         self.book("notes", main="\\documentclass{article}\n")
@@ -142,6 +200,213 @@ class BookTests(unittest.TestCase):
         self.assertEqual(build.main_font("\\documentclass{oll-book}"), "libertinus")
         self.assertEqual(build.main_font("\\documentclass[english,pagella]{oll-book}"), "pagella")
         self.assertEqual(build.main_font("\\documentclass{article}"), "lmodern")
+
+    def test_magazine_issue_and_tagged_articles_publish_as_linked_works(self):
+        issue_path = self.book("lutheraner-1904", ISSUE_FRONTMATTER)
+        article_path = issue_path / "articles/01-vorwort"
+        article_path.mkdir(parents=True)
+        (article_path / "main.tex").write_text(
+            "% ---\n% title: Vorwort\n% topics: [Bibelstudium, Kirchenpresse]\n% source_pages: 1–2\n% ---\n"
+            "\\documentclass{oll-book}\n\\begin{document}\n\\input{body}\n\\end{document}\n")
+        (article_path / "body.tex").write_text("\\chapter{Vorwort}\nGeprüfter Artikel.")
+        # An older volume must not sort above the new one; its sibling article is not published.
+        old_path = self.book("lutheraner-1903", ISSUE_FRONTMATTER.replace("1904-01-05", "1903-12-22")
+                             .replace("volume: 60", "volume: 59").replace("number: 1", "number: 26"))
+        draft_path = old_path / "articles/draft"
+        draft_path.mkdir(parents=True)
+        (draft_path / "main.tex").write_text("% ---\n% title: Draft\n% draft: true\n% ---\n")
+        self.book("lochner")
+        books = build.find_books(self.root)
+        issue = next(b for b in books if b.slug == "lutheraner-1904")
+        [article] = issue.articles
+        self.assertEqual(len(books), 4)
+        self.assertEqual((article.kind, article.year, article.rights, article.source),
+                         ("article", 1904, "Gemeinfrei", "Folio, nach Scan geprüft."))
+        self.assertEqual(article.topics, ["Bibelstudium", "Kirchenpresse"])
+        self.assertEqual(article.issue, issue)
+        self.assertEqual(article.slug, "lutheraner-1904-01-vorwort")
+        before = build.book_hash(article)
+        (issue_path / "main.tex").write_text(ISSUE_FRONTMATTER.replace("% volume:", "% language: en\n% volume:"))
+        self.assertNotEqual(build.book_hash(article), before)
+        cached = self.root / "cache"
+        cached.mkdir()
+        (cached / "book.pdf").write_bytes(b"%PDF")
+        (cached / "book.epub").write_bytes(b"PK")
+        (cached / "body.html").write_text("<p>Geprüfter Artikel.</p>")
+        (cached / "toc.json").write_text("[]")
+        out = self.root / "public"
+        out.mkdir()
+        build.render_site(books, {b.slug: cached for b in books}, out)
+        magazine = (out / "magazines/der-lutheraner/index.html").read_text()
+        self.assertLess(magazine.index("1904"), magazine.index("1903"))
+        self.assertIn('href="/works/lutheraner-1904/"', magazine)
+        issue_page = (out / "works/lutheraner-1904/index.html").read_text()
+        self.assertIn(f'href="{article.url}"', issue_page)
+        article_page = (out / f"works/{article.slug}/index.html").read_text()
+        self.assertIn('href="/works/lutheraner-1904/"', article_page)
+        self.assertIn('href="/topics/bibelstudium/"', article_page)
+        self.assertIn("Source pp. 1–2", article_page)
+        self.assertIn("Geprüfter Artikel.", article_page)
+        self.assertIn(f'href="{article.url}"', (out / "topics/kirchenpresse/index.html").read_text())
+        self.assertIn('data-kind="article"', (out / "index.html").read_text())
+        for route, active in [("index.html", "/"), ("books/index.html", "/books/"),
+                              ("magazines/index.html", "/magazines/"), ("topics/index.html", "/topics/")]:
+            page = build.html.fromstring((out / route).read_text())
+            links = page.xpath('//nav[@aria-label="Library"]/a')
+            self.assertEqual([(link.text, link.get("href")) for link in links],
+                             [("Collection", "/"), ("Books", "/books/"),
+                              ("Magazines", "/magazines/"), ("Topical Index", "/topics/")])
+            self.assertEqual([link.get("href") for link in links if link.get("aria-current") == "page"],
+                             [active])
+        books_page = build.html.fromstring((out / "books/index.html").read_text())
+        self.assertEqual(books_page.xpath('//h1/text()'), ["Books"])
+        self.assertEqual(books_page.xpath('//*[@class="work-row"]/@data-kind'), ["book"])
+        self.assertEqual(books_page.xpath('//*[@id="clear-filters"]/@href'), ["/books/"])
+        self.assertTrue((out / f"works/{article.slug}/{article.slug}.epub").exists())
+        with zipfile.ZipFile(out / f"works/{article.slug}/{article.slug}-latex.zip") as archive:
+            self.assertIn(f"{article.slug}/body.tex", archive.namelist())
+
+    def test_magazine_identity_and_article_inheritance_are_validated(self):
+        cases = {
+            "date": ISSUE_FRONTMATTER.replace("1904-01-05", "1904-02-30"),
+            "volume": ISSUE_FRONTMATTER.replace("volume: 60", "volume: -1"),
+            "missing": ISSUE_FRONTMATTER.replace("% number: 1\n", ""),
+            "kind": ISSUE_FRONTMATTER.replace("kind: issue", "kind: article"),
+        }
+        for name, main in cases.items():
+            with self.subTest(name):
+                with self.assertRaises(build.BookError):
+                    build.load_book(self.book(name, main))
+        issue = build.load_book(self.book("valid", ISSUE_FRONTMATTER))
+        with self.assertRaisesRegex(build.BookError, "inherits `rights`"):
+            build.load_book(self.book("article", FRONTMATTER), issue=issue)
+        # Different URLs must not disguise a duplicate issue.
+        self.book("duplicate", ISSUE_FRONTMATTER)
+        for name in cases:
+            __import__("shutil").rmtree(self.root / name)
+        __import__("shutil").rmtree(self.root / "article")
+        with self.assertRaisesRegex(build.BookError, "duplicate magazine"):
+            build.find_books(self.root)
+
+    def serialized_article(self):
+        # Directory order differs from the editorial installment order, across a year/volume boundary.
+        for name, date, volume, number in (("z-older", "1903-12-22", 59, 26),
+                                           ("a-newer", "1904-01-05", 60, 1)):
+            issue = self.book(name, ISSUE_FRONTMATTER.replace("1904-01-05", date)
+                              .replace("volume: 60", f"volume: {volume}")
+                              .replace("number: 1", f"number: {number}")
+                              .replace(r"\input{articles/01-vorwort/body}",
+                                       r"\subimport{articles/01-vorwort/}{body.tex}"))
+            part = issue / "articles/01-vorwort"
+            part.mkdir(parents=True)
+            (part / "main.tex").write_text(
+                "% ---\n% title: Fortsetzung\n% source_pages: 7–8\n% ---\n"
+                "\\documentclass{oll-book}\n\\begin{document}\n\\input{body}\n\\end{document}\n")
+            (part / "body.tex").write_text("\\chapter{Fortsetzung}\n\\input{detail}\n")
+            (part / "detail.tex").write_text(f"Text aus {name} mit Anmerkung\\footnote{{Eine Note aus {name}.}}")
+        serial = self.book("serial", "% ---\n% kind: article\n% title: Ein fortlaufender Artikel\n"
+                           "% topics: [Kirchengeschichte]\n% rights: Gemeinfrei\n"
+                           "% installments: [z-older-01-vorwort, a-newer-01-vorwort]\n% ---\n")
+        return serial
+
+    def test_serialized_article_reads_in_order_with_scoped_notes_and_issue_links(self):
+        self.serialized_article()
+        books = build.find_books(self.root)
+        serial = next(b for b in books if b.slug == "serial")
+        self.assertEqual([p.issue_date for p in serial.installments], ["1903-12-22", "1904-01-05"])
+        self.assertEqual((serial.magazine, serial.year), ("Der Lutheraner", 1903))
+        editions = {}
+        for book in books:
+            cached = self.root / "cache" / book.slug
+            cached.mkdir(parents=True)
+            (cached / "book.pdf").write_bytes(b"%PDF")
+            (cached / "book.epub").write_bytes(b"PK")
+            (cached / "body.html").write_text(
+                f'<p>{book.slug}</p><a id="anchor"></a><a id="anchor"></a>'
+                '<a href="#note">Note</a><aside id="note">Text</aside>')
+            (cached / "toc.json").write_text("[]")
+            editions[book.slug] = cached
+        out = self.root / "public"
+        out.mkdir()
+        build.render_site(books, editions, out)
+        from lxml import html
+        page = html.fromstring((out / "works/serial/index.html").read_text())
+        sections = page.xpath('//article[@class="book-page"]/section')
+        self.assertEqual([s.get("id") for s in sections],
+                         ["installment-z-older-01-vorwort", "installment-a-newer-01-vorwort"])
+        ids = page.xpath('//@id')
+        self.assertEqual(len(ids), len(set(ids)))
+        for part in serial.installments:
+            self.assertIn(f"{part.slug}-note", ids)
+            self.assertIn(f"#{part.slug}-note", page.xpath('//@href'))
+            self.assertIn(part.issue.url, page.xpath('//@href'))
+            self.assertIn(f"{part.url}{part.slug}.epub", page.xpath('//@href'))
+            part_page = html.fromstring((out / f"works/{part.slug}/index.html").read_text())
+            self.assertIn(serial.url, part_page.xpath('//@href'))
+            self.assertIn(serial.installments[1].url, part_page.xpath('//@href'))
+            self.assertEqual(part_page.xpath('//nav[@aria-label="Article installments"]//a[@aria-current]/@href'),
+                             [part.url])
+        self.assertIn(serial.url, html.fromstring((out / "topics/kirchengeschichte/index.html").read_text()).xpath('//@href'))
+        self.assertIn("serial.pdf", page.xpath('//@href'))
+        self.assertIn("serial.epub", page.xpath('//@href'))
+        self.assertEqual((out / "works/serial/serial.pdf").read_bytes(), b"%PDF")
+        self.assertEqual((out / "works/serial/serial.epub").read_bytes(), b"PK")
+        with zipfile.ZipFile(out / "works/serial/serial-latex.zip") as archive:
+            self.assertIn("serial/oll-book.cls", archive.namelist())
+            for part in serial.installments:
+                self.assertEqual(archive.read(f"serial/installments/{part.slug}/body.tex"),
+                                 (part.path / "body.tex").read_bytes())
+                self.assertEqual(archive.read(f"serial/installments/{part.slug}/detail.tex"),
+                                 (part.path / "detail.tex").read_bytes())
+        catalog = html.fromstring((out / "index.html").read_text())
+        self.assertIn("/works/serial/serial.pdf", catalog.xpath('//@href'))
+        self.assertIn("/works/serial/serial.epub", catalog.xpath('//@href'))
+        manifest = serial.path / "main.tex"
+        manifest.write_text(manifest.read_text().replace(
+            "[z-older-01-vorwort, a-newer-01-vorwort]", "[a-newer-01-vorwort]"))
+        partial = next(b for b in build.find_books(self.root) if b.slug == "serial")
+        self.assertEqual([p.slug for p in partial.installments], ["a-newer-01-vorwort"])
+
+    def test_serialized_edition_cache_follows_all_parts_and_their_order(self):
+        self.serialized_article()
+        serial = next(b for b in build.find_books(self.root) if b.slug == "serial")
+        before = build.book_hash(serial)
+        second_body = serial.installments[1].path / "body.tex"
+        original = second_body.read_text()
+        second_body.write_text(original + "\nEine Berichtigung.")
+        self.assertNotEqual(build.book_hash(serial), before)
+        second_body.write_text(original)
+        self.assertEqual(build.book_hash(serial), before)
+        serial.installments.reverse()
+        self.assertNotEqual(build.book_hash(serial), before)
+        serial.installments.reverse()
+        issue = serial.installments[1].issue.path / "main.tex"
+        issue.write_text(issue.read_text().replace("% source:", "% language: de\n% source:"))
+        self.assertNotEqual(build.book_hash(serial), before)
+
+    def test_serialized_article_rejects_invalid_or_unpublished_installments(self):
+        serial = self.serialized_article()
+        main = (serial / "main.tex").read_text()
+        for replacement in ("[]", "not-a-list", "[missing]", "[serial]", "[z-older]",
+                            "[z-older-01-vorwort, z-older-01-vorwort]"):
+            with self.subTest(replacement=replacement):
+                (serial / "main.tex").write_text(main.replace(
+                    "[z-older-01-vorwort, a-newer-01-vorwort]", replacement))
+                with self.assertRaises(build.BookError):
+                    build.find_books(self.root)
+        (serial / "main.tex").write_text(main)
+        issue_main = self.root / "a-newer/main.tex"
+        original = issue_main.read_text()
+        for invalid in (original.replace("% kind:", "% language: en\n% kind:"),
+                        original.replace("der-lutheraner", "another-magazine")):
+            issue_main.write_text(invalid)
+            with self.assertRaises(build.BookError):
+                build.find_books(self.root)
+        issue_main.write_text(original)
+        part_main = self.root / "a-newer/articles/01-vorwort/main.tex"
+        part_main.write_text(part_main.read_text().replace("% title:", "% draft: true\n% title:"))
+        with self.assertRaises(build.BookError):
+            build.find_books(self.root)
 
     def test_site_is_rendered_from_cached_editions(self):
         path = self.book("lochner")

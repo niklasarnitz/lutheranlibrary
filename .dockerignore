@@ -1,4 +1,5 @@
 .git
+.amp/in
 .venv
 .cache
 .cache-build.log

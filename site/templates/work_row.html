@@ -1,6 +1,8 @@
-<article class="work-row" data-search="{{ [book.title, book.subtitle, book.author, book.description, book.topics|join(' '), book.year]|join(' ')|lower }}" data-topics="{% for t in book.topics %}{{ topic_slug(t) }} {% endfor %}">
-  <div class="work-summary"><div class="metadata">Book{% if book.year %} / {{ book.year }}{% endif %}{% if book.pages %} / {{ book.pages }} pages{% endif %}</div>
+<article class="work-row" data-kind="{{ book.kind }}" data-search="{{ [book.title, book.subtitle, book.author, book.description, book.topics|join(' '), book.year, book.magazine, book.issue_date]|join(' ')|lower }}" data-topics="{% for t in book.topics %}{{ topic_slug(t) }} {% endfor %}">
+  <div class="work-summary"><div class="metadata">{{ book.kind_label }}{% if book.year %} / {{ book.year }}{% endif %}{% if book.pages %} / {{ book.pages }} pages{% endif %}</div>
   <h3><a href="{{ book.url }}">{{ book.title }}{% if book.subtitle %}. {{ book.subtitle }}{% endif %}</a></h3>
+  {% if book.issue %}<p class="metadata"><a href="{{ book.issue.url }}">{{ book.magazine }}, {{ book.issue_date }}, Vol. {{ book.volume }}, No. {{ book.number }}</a>{% if book.source_pages %} / Source pp. {{ book.source_pages }}{% endif %}</p>{% endif %}
+  {% if book.installments %}<p class="metadata">{{ book.magazine }} / {{ book.installments|length }} available installment{{ '' if book.installments|length == 1 else 's' }}</p>{% elif book.serial %}<p class="metadata">Part of <a href="{{ book.serial.url }}">{{ book.serial.title }}</a></p>{% endif %}
   {% if book.author %}<p class="author">{{ book.author }}</p>{% endif %}
   {% if book.description %}<p>{{ book.description|truncate(260) }}</p>{% endif %}
   <div class="tags">{% for t in book.topics %}<a href="/topics/{{ topic_slug(t) }}/">{{ t }}</a>{% endfor %}</div></div>

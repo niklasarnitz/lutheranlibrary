@@ -246,6 +246,9 @@
   .reading .sidebar-bottom { display: none; }
 }
 
+.book-page .notensatz { margin: 1.25em 0; text-align: center; break-inside: avoid; }
+.book-page .notensatz img { display: block; width: 100%; height: auto; margin: 0 auto; }
+
 @media print {
   .reading { background: none; }
   .book-toc, .book-toc-compact, .running-head, .edition-notice { display: none; }

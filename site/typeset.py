@@ -61,6 +61,31 @@ def read_log(path):
     return path.read_text("utf-8", "replace") if path.exists() else ""
 
 
+def engrave_music(book, target):
+    """Engrave editable LilyPond sources before TeX; shell escape stays disabled."""
+    target.mkdir(parents=True, exist_ok=True)
+    for source in source_files(book):
+        if source.suffix.lower() in {".png", ".jpg", ".jpeg"}:
+            image = target / source.relative_to(book)
+            image.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy(source, image)
+        if source.suffix != ".ly":
+            continue
+        output = target / source.relative_to(book).with_suffix("")
+        output.parent.mkdir(parents=True, exist_ok=True)
+        # Cairo outlines lyrics as well as notes: browser font substitution must
+        # not change syllable spacing or clip the last word of a score.
+        for options, suffix in ((["--pdf"], ".pdf"), (["-dbackend=cairo", "--svg"], ".svg")):
+            code, log = run(["lilypond", *options, "-dno-point-and-click", "-o", str(output), str(source)],
+                            source.parent)
+            if code or not output.with_suffix(suffix).is_file() or "no glyph for character" in log:
+                raise StepFailed(f"LilyPond: {source.relative_to(book)}\n{log[-4000:]}")
+            # One image per source keeps the same score intact in all three formats.
+            if list(output.parent.glob(f"{output.name}-page*{suffix}")):
+                raise StepFailed(f"{source.name}: split multi-page music into separate score sources")
+    return target
+
+
 def stage_dir(book, build, name):
     path = build / name
     path.mkdir(parents=True)
@@ -70,6 +95,8 @@ def stage_dir(book, build, name):
         shutil.copy(file, target)
     for shared in ("oll.cfg", *CLASS_FILES):
         shutil.copy(TEX / shared, path / shared)
+    if (build / "engraved").exists():
+        shutil.copytree(build / "engraved", path, dirs_exist_ok=True)
     return path
 
 
@@ -96,6 +123,8 @@ def build_html(book, build):
     html = path / "out" / f"{JOB}.html"
     if not html.exists():
         raise StepFailed("TeX4ht produced no HTML.\n" + ("\n".join(tex_errors(read_log(path / f"{JOB}.log"))) or out[-3000:]))
+    if (build / "engraved").exists():
+        shutil.copytree(build / "engraved", path / "out", dirs_exist_ok=True)
     return html, path / "out" / f"{JOB}.css", tex_errors(read_log(path / f"{JOB}.log"))
 
 
@@ -141,8 +170,10 @@ def set_opf_metadata(opf, meta):
 
 def typeset(book, build, meta):
     """Build PDF, HTML and EPUB of the book directory into build/; returns their paths."""
-    stage = "pdf"
+    stage = "music"
     try:
+        assets = engrave_music(book, build / "engraved")
+        stage = "pdf"
         pdf, pages, warnings = build_pdf(book, build)
         stage = "html"
         html, css, html_warnings = build_html(book, build)
@@ -150,5 +181,5 @@ def typeset(book, build, meta):
         epub = build_epub(book, build, meta)
     except (StepFailed, OSError, UnicodeError, zipfile.BadZipFile) as exc:
         raise StepFailed(f"{stage}: {exc}") from exc
-    return {"pdf": pdf, "html": html, "css": css, "epub": epub, "pages": pages,
+    return {"pdf": pdf, "html": html, "css": css, "epub": epub, "pages": pages, "assets": assets,
             "warnings": warnings + html_warnings}

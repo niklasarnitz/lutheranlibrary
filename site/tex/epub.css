@@ -13,6 +13,8 @@ div.marginpar { float: right; width: 30%; margin: 0 0 0.5em 1em; font-size: 0.8e
 span.quellseite { display: none; }
 .unsicher { color: #777; }
 .gesperrt { letter-spacing: 0.12em; }
+.notensatz { margin: 1em 0; text-align: center; page-break-inside: avoid; }
+.notensatz img { width: 100%; max-width: 100%; height: auto; }
 table.longtable, table.tabular { border-collapse: collapse; margin: 1em auto; font-size: 0.9em; }
 tr.hline td { border-top: 1px solid currentColor; }
 div.footnotes { font-size: 0.85em; border-top: 1px solid #999; margin-top: 2em; }

@@ -171,6 +171,31 @@ TEXINPUTS=../site/tex//: lualatex main.tex
   `tabular`, on a page of its own. Size commands (`\small`, `\footnotesize`)
   are allowed inside tables.
 
+### Musical notation
+
+Keep editable LilyPond sources in `music/`, one single-page score per `.ly`
+file. Insert them at their original place with
+`\notensatz{music/096-01}{Versikel: Danket dem HErrn …}`. The second argument
+describes the notation and its sung text for readers who cannot see it.
+Do not repeat lyrics as running text when they are already underlaid in the
+score; additional verses without notes remain ordinary text or `verse`.
+
+To retain notation as an original scan instead of re-engraving it, keep a PNG
+in `facsimiles/` and use `\notensatz{facsimiles/552}{Description of the score}`.
+The PNG is included in the PDF, reader, EPUB and source download; describe this
+editorial choice in the book's source metadata and review record.
+
+The site build engraves each source to PDF for print and SVG for the reader
+and EPUB, before running TeX. It needs LilyPond 2.24.3 or newer; LaTeX shell
+escape stays disabled. Preserve the original voices, pitches, note values,
+clefs, accidentals and underlay; mark unresolved readings in the book's review
+record rather than silently replacing them with a plausible tune.
+
+The downloadable LaTeX archive includes both editable `.ly` files and their
+engraved PDF/SVG assets, so it compiles without LilyPond. To compile a checkout
+by hand, first engrave its `.ly` files with LilyPond (for example,
+`lilypond -o music/096-01 music/096-01.ly` from the book directory).
+
 ## 8. What not to do
 
 - No `\section*`, `\chapter*` and no headings made from `center` + `\Large`.

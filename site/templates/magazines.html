@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Magazines{% endblock %}
+{% block content %}
+<header class="page-heading"><h1>Magazines</h1><p>Browse by publication, year and issue, or find individual articles in the collection and topic index.</p></header>
+{% for magazine in magazines %}
+<article class="journal-row"><div>
+  <h2><a href="/magazines/{{ magazine.slug }}/">{{ magazine.name }}</a></h2>
+  <p>{{ magazine.issues|length }} issue{{ '' if magazine.issues|length == 1 else 's' }} / {{ magazine.issues|map(attribute='year')|min }}{% if magazine.issues|map(attribute='year')|min != magazine.issues|map(attribute='year')|max %}–{{ magazine.issues|map(attribute='year')|max }}{% endif %}</p>
+  <a href="/magazines/{{ magazine.slug }}/">Browse issues</a>
+</div></article>
+{% else %}<p>No magazine issues yet.</p>{% endfor %}
+{% endblock %}

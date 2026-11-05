@@ -15,7 +15,7 @@ CSS_SANITIZER = CSSSanitizer(allowed_css_properties=[
 ALLOWED_TAGS = {
     "p", "h1", "h2", "h3", "h4", "h5", "h6", "em", "strong", "b", "i", "u", "s", "small", "cite", "q",
     "blockquote", "ul", "ol", "li", "dl", "dt", "dd", "a", "sup", "sub", "br", "hr", "code", "pre",
-    "span", "div", "section", "aside", "nav", "figure", "figcaption",
+    "span", "div", "section", "aside", "nav", "figure", "figcaption", "img",
     "table", "thead", "tbody", "tfoot", "tr", "th", "td", "caption", "col", "colgroup",
     "math", "semantics", "mrow", "mi", "mn", "mo", "ms", "msup", "msub", "msubsup", "mfrac", "msqrt",
     "mroot", "mtext", "annotation", "mspace", "mover", "munder", "munderover", "mstyle", "mtable",
@@ -31,6 +31,8 @@ ALLOWED_ATTRIBUTES = {
     "annotation": ["encoding"],
     "span": ["data-page", "data-note", "role"],
     "aside": ["role"],
+    "img": lambda tag, name, value: name in {"alt", "width", "height"} or (
+        name == "src" and re.fullmatch(r"(?:[A-Za-z0-9_-]+/)*[A-Za-z0-9_-]+\.(?:svg|png|jpg|jpeg)", value)),
 }
 FONT_DECLARATION = re.compile(r"^\s*(font-size|font-style|font-weight|font-variant|font-family)\s*:")
 HEADINGS = {

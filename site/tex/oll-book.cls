@@ -48,7 +48,10 @@
 \RequirePackage[autostyle]{csquotes}
 \RequirePackage{xcolor}
 \RequirePackage{array}
+\RequirePackage{longtable}% comparison tables may continue across pages
 \RequirePackage{rotating}% sideways tables (registers, statistics)
+\RequirePackage{import}% source fragments retain their own relative input paths
+\RequirePackage{graphicx}% pre-engraved LilyPond scores; no shell escape
 
 % ---------------------------------------------------------------- page
 \RequirePackage[inner=18mm,outer=28mm,top=20mm,bottom=22mm,headsep=5mm,
@@ -144,6 +147,13 @@
 
 % Uncertain readings of the transcription.
 \newcommand{\unsicher}[1]{\textcolor{gray}{#1}\textsuperscript{\textcolor{gray}{?}}}
+
+% Editable score source: #1.ly; the build supplies #1.pdf and #1.svg.
+% Original score facsimiles may instead supply #1.png.
+% #2 describes the music for readers who cannot see the notation.
+\newcommand{\notensatz}[2]{\par\begin{center}%
+  \includegraphics[width=\linewidth,height=0.85\textheight,keepaspectratio]{#1}%
+  \end{center}\par}
 
 % Letter-spaced emphasis (Sperrsatz) of German print.
 \newcommand{\gesperrt}[1]{{\addfontfeatures{LetterSpace=12}#1}}

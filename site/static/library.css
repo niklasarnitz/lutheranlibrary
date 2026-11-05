@@ -246,6 +246,9 @@ main {
   padding: 26px 0;
   border-top: 1px solid var(--line);
 }
+.work-row[hidden] {
+  display: none;
+}
 .work-summary {
   flex: 1;
   min-width: 0;
@@ -347,6 +350,28 @@ main {
 }
 .journal-row p {
   color: var(--muted);
+}
+.issue-articles {
+  max-width: 62rem;
+  margin: 0 auto 48px;
+}
+.issue-articles + h2 {
+  max-width: 62rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+.issue-contents {
+  padding-left: 1.5em;
+  max-width: 78ch;
+}
+.issue-contents li {
+  padding: 16px 0 16px 8px;
+  border-bottom: 1px solid var(--line);
+  line-height: 1.5;
+}
+.issue-contents .metadata {
+  display: block;
+  margin-top: 4px;
 }
 .topic-index {
   display: grid;

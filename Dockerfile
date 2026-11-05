@@ -9,7 +9,7 @@ RUN curl -fsSL https://github.com/alerque/libertinus/releases/download/v7.051/Li
 FROM debian:trixie-20261020-slim AS build
 ENV DEBIAN_FRONTEND=noninteractive PYTHONDONTWRITEBYTECODE=1 PIP_NO_CACHE_DIR=1
 RUN apt-get update && apt-get install -y --no-install-recommends \
-      python3 python3-venv zip \
+      python3 python3-venv zip lilypond \
       texlive-luatex texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended \
       texlive-lang-german texlive-lang-english texlive-lang-greek texlive-plain-generic \
       texlive-extra-utils tex4ht fonts-texgyre fonts-lmodern \

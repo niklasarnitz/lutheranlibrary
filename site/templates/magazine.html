@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}{{ magazine.name }}{% endblock %}
+{% block content %}
+<div class="breadcrumbs"><a href="/magazines/">Magazines</a> / {{ magazine.name }}</div>
+<header class="page-heading"><h1>{{ magazine.name }}</h1><p>Read complete issues or explore their individual articles.</p></header>
+{% for year, issues in magazine.issues|groupby('year')|reverse %}
+<section class="year-section"><h2>{{ year }}</h2><div>
+  {% for volume, volume_issues in issues|groupby('volume')|reverse %}
+  <section class="volume-section"><h3>Volume {{ volume }}</h3><div class="issue-grid">
+    {% for issue in volume_issues %}<a class="issue-tile" href="{{ issue.url }}"><strong>Issue {{ issue.number }}</strong><time datetime="{{ issue.issue_date }}">{{ issue.issue_date }}</time><span class="metadata">{{ issue.articles|length }} articles</span></a>{% endfor %}
+  </div></section>
+  {% endfor %}
+</div></section>
+{% endfor %}
+{% endblock %}
