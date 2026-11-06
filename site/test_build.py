@@ -540,6 +540,50 @@ class BookTests(unittest.TestCase):
 class TypesetTests(unittest.TestCase):
     @unittest.skipUnless(all(shutil.which(cmd) for cmd in ("lualatex", "make4ht", "tex4ebook")),
                          "TeX build tools are not installed")
+    def test_sideways_registers_stay_upright_and_complete_in_digital_editions(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            book = root / "book"
+            book.mkdir()
+            (book / "main.tex").write_text(r"""\documentclass{oll-book}
+\begin{document}
+Before register.
+
+\quellseite{302}
+\begin{sideways}
+\begin{minipage}{0.92\textheight}
+\noindent Appendix.
+\begin{center}
+Family register.\footnote{An explanatory note.}\\
+\begin{tabular}{|l|l|}
+\hline Name & Date \\ \hline
+Maria & 1847 \\ \hline
+\end{tabular}
+\end{center}
+\end{minipage}
+\end{sideways}
+
+After register.
+\end{document}
+""")
+            result = typeset(book, root / "build", {"title": "Sideways register"})
+            documents = [lxml.html.fromstring(result["html"].read_bytes())]
+            with zipfile.ZipFile(result["epub"]) as archive:
+                documents.extend(lxml.html.fromstring(archive.read(name))
+                                 for name in archive.namelist() if name.endswith(".xhtml"))
+            registers = [doc for doc in documents if doc.xpath('//table[contains(., "Maria")]')]
+            self.assertEqual(len(registers), 2)  # reader and EPUB
+            for doc in registers:
+                text = " ".join(doc.text_content().split())
+                for expected in ("Before register.", "Appendix.", "Family register.",
+                                 "An explanatory note.", "Maria", "1847", "After register."):
+                    self.assertIn(expected, text)
+                self.assertTrue(doc.cssselect('.quellseite[data-page="302"]'))
+                for node in doc.xpath('//*[@style]'):
+                    self.assertNotIn("rotate(", node.get("style"))
+
+    @unittest.skipUnless(all(shutil.which(cmd) for cmd in ("lualatex", "make4ht", "tex4ebook")),
+                         "TeX build tools are not installed")
     def test_digital_registers_cite_print_pages_and_link_to_local_targets(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
