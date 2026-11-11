@@ -145,6 +145,9 @@ python3 -m venv .venv && .venv/bin/pip install -r site/requirements.txt
 .venv/bin/python -m unittest discover -s site
 ```
 
+Reader interaction tests use Node.js's built-in test runner:
+`node --test site/test_reader.js`.
+
 It needs `lualatex`, `make4ht` and `tex4ebook` (TeX Live), LilyPond 2.24.3 or
 newer for books with musical notation, and the fonts the books use.
 `site/build_webfonts.sh` subsets those fonts into

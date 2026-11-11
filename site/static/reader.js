@@ -28,7 +28,9 @@
     queued = false;
     let found = null;
     for (const entry of entries) {
-      if (entry.heading.getBoundingClientRect().top > 90) break;
+      // Match native anchor positioning, including fractional-pixel rounding.
+      const offset = parseFloat(getComputedStyle(entry.heading).scrollMarginTop) || 0;
+      if (entry.heading.getBoundingClientRect().top > offset + 1) break;
       found = entry;
     }
     if (found === current) return;
