@@ -126,20 +126,37 @@ for this task; unsolicited outputs from other threads need user approval.
 Integrate approved fragments into self-contained edition sources and record
 substantive decisions and unresolved items in the edition's `REVIEW.md`.
 
+Set every new edition with the shared [`oll-book` class](../../../site/tex/oll-book.cls)
+and follow [`TYPESETTING.md`](../../../TYPESETTING.md) for its LaTeX markup.
+Use the class's commands for title pages, headings, quotations, notes, and
+tables. Keep typography and page layout in the shared class.
+
 ## 5. Finish and validate the edition
 
 Build the affected PDF, reader, EPUB and LaTeX ZIP with the existing pipeline,
-using private output/cache directories when concurrent work is possible. Check
-TeX logs, source-marker order, note coverage, EPUB integrity and source-archive
-completeness. Check the generated contents against the retained headings and
-verify that its links resolve and it is the only contents list in the edition.
-Visually inspect representative rendered outputs as well as source scans.
-For pipeline edits, run the site's required tests. Inspect current build APIs
-rather than copying stale commands.
+using private output/cache directories when concurrent work is possible.
+Inspect the current build APIs and validate each format before marking the
+edition ready:
+
+- **PDF.** Check TeX logs against the `TYPESETTING.md` checklist. Visually
+  inspect the title page, contents, and representative pages with notes,
+  tables, or illustrations. Check contents links and edition page numbers.
+- **Reader.** Open the rendered edition and check heading hierarchy, contents
+  links, source-page anchors, notes, and representative layout.
+- **EPUB.** Check ZIP/XML integrity, open the EPUB in a reader or previewer,
+  and inspect representative chapters, notes, and any tables or illustrations.
+  Verify that the contents links reach the intended headings.
+- **LaTeX ZIP.** Check that the archive includes the shared class, source
+  fragments, and assets needed to build the edition.
+
+Across the rendered formats, check the generated contents against the retained
+headings and confirm it is the edition's only contents list. Verify source-marker
+order and note coverage. For pipeline edits, run the site's required tests.
 
 An edition is finished when every scan in scope is accounted for, retained text
-has been visually collated, the catalog and self-contained LaTeX sources are
-integrated, and the PDF, reader, EPUB and LaTeX ZIP pass the checks above.
+has been visually collated, the catalog and self-contained `oll-book` sources
+follow the repository's typesetting rules, and each output passes the checks
+above. Record the checks performed for each format in `REVIEW.md`.
 Continue from worker fragments through integration and validation. If the user
 requests an intermediate checkpoint or a blocker prevents completion, record
 the draft status and the work still required.
