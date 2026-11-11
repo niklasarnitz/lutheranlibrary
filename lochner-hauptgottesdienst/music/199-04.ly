@@ -1,5 +1,6 @@
 \version "2.24.3"
 % Lochner, Der apostolische Glaube. Source pages 173–174.
+% The darkened bass chord on “to” is provisionally F-sharp3 and D3.
 #(set-global-staff-size 16)
 \header { tagline = ##f }
 \paper {
