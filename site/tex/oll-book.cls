@@ -123,7 +123,7 @@
 % ---------------------------------------------------------------- PDF links
 \ifoll@pdf
   \RequirePackage[hidelinks,bookmarksopen,bookmarksdepth=2]{hyperref}
-  \pdfstringdefDisableCommands{\def\,{ }\def\\{ }}
+  \pdfstringdefDisableCommands{\def\,{ }\def\\{ }\def\hebraeisch#1{#1}}
 \else
   \newcounter{ollanchor}
   \newcommand{\phantomsection}{\refstepcounter{ollanchor}}
@@ -160,6 +160,15 @@
 
 % Uncertain readings of the transcription.
 \newcommand{\unsicher}[1]{\textcolor{gray}{#1}\textsuperscript{\textcolor{gray}{?}}}
+
+% Keep Hebrew in logical order in the source. Shape and direct the run
+% independently so adjacent Latin references retain their left-to-right order.
+\ifoll@pdf
+  \newfontfamily\oll@hebrewfont{Libertinus Serif}[Script=Hebrew,Renderer=HarfBuzz]
+  \DeclareRobustCommand{\hebraeisch}[1]{\leavevmode\hbox dir TRT{\oll@hebrewfont#1}}
+\else
+  \DeclareRobustCommand{\hebraeisch}[1]{#1}
+\fi
 
 % Editable score source: #1.ly; the build supplies #1.pdf and #1.svg.
 % Original score facsimiles may instead supply #1.png.

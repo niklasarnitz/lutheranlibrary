@@ -376,7 +376,8 @@ def render_site(books, editions, out):
     )
     books = sorted(books, key=lambda b: (b.author.split()[-1].lower() if b.author else "", b.title.lower(),
                                          b.subtitle.lower()))
-    write(out, "index.html", env.get_template("catalog.html").render(books=books, page="catalog"))
+    write(out, "index.html", env.get_template("catalog.html").render(
+        books=[book for book in books if book.kind != "article"], page="catalog"))
     write(out, "books/index.html", env.get_template("catalog.html").render(
         books=[book for book in books if book.kind == "book"], page="books"))
     write(out, "magazines/index.html", env.get_template("magazines.html").render(

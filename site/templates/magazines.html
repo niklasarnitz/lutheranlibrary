@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% block title %}Magazines{% endblock %}
 {% block content %}
-<header class="page-heading"><h1>Magazines</h1><p>Browse by publication, year and issue, or find individual articles in the collection and topic index.</p></header>
+<header class="page-heading"><h1>Magazines</h1><p>Browse by publication, year and issue, or find individual articles in the topic index.</p></header>
 {% for magazine in magazines %}
 <article class="journal-row"><div>
   <h2><a href="/magazines/{{ magazine.slug }}/">{{ magazine.name }}</a></h2>

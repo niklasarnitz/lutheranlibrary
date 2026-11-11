@@ -7,7 +7,7 @@
   <label for="q">Search</label>
   <div class="search-line"><input type="search" id="q" name="q" placeholder="Title, author, or description" autocomplete="off"></div>
   <div class="filters"><label for="topic">Topic <select id="topic" name="topic"><option value="">All topics</option>{% for topic in topics %}<option value="{{ topic.slug }}">{{ topic.name }}</option>{% endfor %}</select></label>
-  {% if page != 'books' %}<label for="kind">Type <select id="kind" name="kind"><option value="">All works</option><option value="book">Books</option><option value="issue">Magazine issues</option><option value="article">Articles</option></select></label>{% endif %}
+  {% if page != 'books' %}<label for="kind">Type <select id="kind" name="kind"><option value="">All works</option><option value="book">Books</option><option value="issue">Magazine issues</option></select></label>{% endif %}
   <a href="{{ '/books/' if page == 'books' else '/' }}" id="clear-filters" hidden>Clear filters</a></div>
 </form>
 <section class="collection-section">

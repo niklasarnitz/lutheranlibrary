@@ -58,8 +58,9 @@ Libertinus, TeX Gyre Pagella or Latin Modern.
 
 Magazine issues use the same reader, PDF, EPUB and LaTeX pipeline as books.
 `/magazines/` lists publications; `/magazines/<magazine_slug>/` groups their
-issues by year and volume. Issues and individual articles also appear in the
-collection (filterable by type) and topic index.
+issues by year and volume. The collection lists books and complete magazine
+issues (filterable by type), not individual articles. Articles remain accessible
+from their issues and the topic index.
 
 An issue is a top-level directory with this additional `main.tex` frontmatter:
 
@@ -124,7 +125,7 @@ references, duplicate installments and nested serials fail the build. An
 installment belongs to only one shared article. A single available installment
 is allowed; the page deliberately does not claim the serial is complete.
 
-The shared entry appears in the collection and its topic pages. Its reader
+The shared entry appears on its topic pages, not in the collection. Its reader
 assembles the existing installment editions without copying transcription text;
 each installment links back to this entry and to the other available parts.
 Notes and anchors are scoped per installment. PDF, EPUB and LaTeX downloads

@@ -324,7 +324,10 @@ class BookTests(unittest.TestCase):
         self.assertIn("Source pp. 1–2", article_page)
         self.assertIn("Geprüfter Artikel.", article_page)
         self.assertIn(f'href="{article.url}"', (out / "topics/kirchenpresse/index.html").read_text())
-        self.assertIn('data-kind="article"', (out / "index.html").read_text())
+        catalog = build.html.fromstring((out / "index.html").read_text())
+        self.assertCountEqual(catalog.xpath('//*[@class="work-row"]//h3/a/@href'),
+                              ["/works/lochner/", "/works/lutheraner-1904/", "/works/lutheraner-1903/"])
+        self.assertEqual(catalog.xpath('//select[@id="kind"]/option/@value'), ["", "book", "issue"])
         for route, active in [("index.html", "/"), ("books/index.html", "/books/"),
                               ("magazines/index.html", "/magazines/"), ("topics/index.html", "/topics/")]:
             page = build.html.fromstring((out / route).read_text())
@@ -436,8 +439,8 @@ class BookTests(unittest.TestCase):
                 self.assertEqual(archive.read(f"serial/installments/{part.slug}/detail.tex"),
                                  (part.path / "detail.tex").read_bytes())
         catalog = html.fromstring((out / "index.html").read_text())
-        self.assertIn("/works/serial/serial.pdf", catalog.xpath('//@href'))
-        self.assertIn("/works/serial/serial.epub", catalog.xpath('//@href'))
+        self.assertNotIn(serial.url, catalog.xpath('//@href'))
+        self.assertEqual(catalog.xpath('//*[@class="work-row"]/@data-kind'), ["issue", "issue"])
         manifest = serial.path / "main.tex"
         manifest.write_text(manifest.read_text().replace(
             "[z-older-01-vorwort, a-newer-01-vorwort]", "[a-newer-01-vorwort]"))

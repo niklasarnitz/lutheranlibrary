@@ -122,6 +122,9 @@ TEXINPUTS=../site/tex//: lualatex main.tex
   `\large` etc. in running text.
 - Foreign-language passages need no markup. Long Latin quotations may be
   wrapped in `\foreignlanguage{latin}{…}` for hyphenation.
+- In mixed-script entries, wrap each Hebrew word or phrase in
+  `\hebraeisch{…}` to set its direction and vowel points. Enter Unicode in
+  logical reading order, with Latin references outside the command.
 
 ## 4. Notes, page markers, glosses
 

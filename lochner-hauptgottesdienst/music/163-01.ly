@@ -1,5 +1,5 @@
 \version "2.24.3"
-% Scan 163, printed p. 138: Hosianna and first Halleluja.
+% Scan 163, printed p. 138: Hosianna and the alternative versicle underlay.
 #(set-global-staff-size 18)
 \header { piece = "P." tagline = ##f }
 \paper {
@@ -18,6 +18,9 @@
   \addlyrics {
     "Ho :" "si :" "an :" na dem "Soh :" ne "Da :" "vid."
     "Hal :" -- "le :" -- "lu :" -- "ja!"
+  }
+  \addlyrics {
+    Hei -- li -- "ge uns," "HErr," in "dei :" ner "Wahr :" heit.
   }
   \layout {
     ragged-right = ##t
