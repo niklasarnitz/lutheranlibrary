@@ -84,6 +84,16 @@ record the appendix in the manifest. A continued note block is not necessarily
 a second authored note. Join cross-page words and prose without inventing
 missing text; preserve source markers at the proper boundaries.
 
+### Table of contents
+
+Use the printed Inhaltsverzeichnis to check the order and nesting of headings
+in the retained text. Preserve that structure with unstarred LaTeX headings
+and use a single `\tableofcontents` as the edition's contents list. Omit the
+printed list and its old page numbers from the transcription. Record omitted
+scan ranges in the edition's `source` metadata and account for them in the
+worker manifest. On mixed pages, retain the surrounding text and its source
+markers.
+
 ### Selective Bible apparatus
 
 Carry selection state across pages. Retain prefaces, descriptive synopses,
@@ -120,10 +130,12 @@ substantive decisions and unresolved items in the edition's `REVIEW.md`.
 
 Build the affected PDF, reader, EPUB and LaTeX ZIP with the existing pipeline,
 using private output/cache directories when concurrent work is possible. Check
-TeX logs, source-marker order, contents hierarchy/links, note coverage, EPUB
-integrity and source-archive completeness. Visually inspect representative
-rendered outputs as well as source scans. For pipeline edits, run the site's
-required tests. Inspect current build APIs rather than copying stale commands.
+TeX logs, source-marker order, note coverage, EPUB integrity and source-archive
+completeness. Check the generated contents against the retained headings and
+verify that its links resolve and it is the only contents list in the edition.
+Visually inspect representative rendered outputs as well as source scans.
+For pipeline edits, run the site's required tests. Inspect current build APIs
+rather than copying stale commands.
 
 An edition is finished when every scan in scope is accounted for, retained text
 has been visually collated, the catalog and self-contained LaTeX sources are
