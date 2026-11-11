@@ -549,24 +549,24 @@ class TypesetTests(unittest.TestCase):
 \begin{document}
 Before register.
 
+\begin{quertabelle}
 \quellseite{302}
-\begin{sideways}
-\begin{minipage}{0.92\textheight}
 \noindent Appendix.
 \begin{center}
 Family register.\footnote{An explanatory note.}\\
 \begin{tabular}{|l|l|}
 \hline Name & Date \\ \hline
-Maria & 1847 \\ \hline
+Maria & 1847\rule{0pt}{11cm} \\ \hline
 \end{tabular}
 \end{center}
-\end{minipage}
-\end{sideways}
+\end{quertabelle}
 
 After register.
 \end{document}
 """)
             result = typeset(book, root / "build", {"title": "Sideways register"})
+            self.assertEqual(result["warnings"], [])
+            self.assertNotIn("Overfull \\hbox", (root / "build/pdf/main.log").read_text())
             documents = [lxml.html.fromstring(result["html"].read_bytes())]
             with zipfile.ZipFile(result["epub"]) as archive:
                 documents.extend(lxml.html.fromstring(archive.read(name))

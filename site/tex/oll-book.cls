@@ -140,6 +140,13 @@
   \newenvironment{titelseite}{\begin{titlepage}\centering\ignorespaces}{\par\end{titlepage}}
 \fi
 
+% Typography shared by book title pages and periodical mastheads.
+\newcommand{\werktitel}[1]{{\LARGE #1}}
+\newcommand{\werkuntertitel}[1]{{\Large #1}}
+
+% Biblical text set apart from an accompanying verse-by-verse exposition.
+\newenvironment{schriftzitat}{\begin{quote}\bfseries}{\end{quote}}
+
 % Source page of the printed original (scan page): \quellseite{12} on its own
 % line where the page break falls. The online reader shows it in the margin;
 % the PDF only with the class option `quellseiten'. It never changes spacing.
@@ -179,11 +186,36 @@
 % Several lines in one table cell: \zl{Zeile\\Zeile}.
 \newcommand{\zl}[1]{\begin{tabular}[t]{@{}c@{}}#1\end{tabular}}
 
-% The original's own table of contents, kept as text with its page numbers.
-%   \begin{originalinhalt}
-%     \inhaltsgruppe{A. Einleitendes.}
-%     \inhaltseintrag{I. Vorbereitung zum geistlichen Amte}{27}
-%   \end{originalinhalt}
+% A wide register occupies its own rotated page in print. The digital
+% edition keeps the table upright and omits the fixed-width print box.
+\ifoll@pdf
+  \newsavebox{\oll@quertabelle}
+  \newenvironment{quertabelle}{\clearpage\begin{lrbox}{\oll@quertabelle}%
+    \begin{minipage}{0.98\textheight}\setlength{\tabcolsep}{2pt}%
+  }{%
+    \end{minipage}\end{lrbox}%
+    \noindent\begin{sideways}%
+      % The height of the unrotated box becomes its width on the page.
+      \ifdim\dimexpr\ht\oll@quertabelle+\dp\oll@quertabelle\relax>\textwidth
+        \resizebox*{!}{\textwidth}{\usebox{\oll@quertabelle}}%
+      \else
+        \usebox{\oll@quertabelle}%
+      \fi
+    \end{sideways}\par\clearpage
+  }
+\else
+  \newenvironment{quertabelle}{\par}{\par}
+\fi
+
+% Compact multi-page table with a narrow item-number column and four
+% equally wide comparison columns.
+\newenvironment{vergleichstabelle}{\footnotesize\setlength{\tabcolsep}{3pt}%
+  \begin{longtable}{@{}>{\raggedleft\arraybackslash}p{4.5mm}%
+    *{4}{>{\raggedright\arraybackslash}p{\dimexpr(\linewidth-4.5mm-8\tabcolsep)/4\relax}}@{}}%
+}{\end{longtable}}
+
+% Alphabetical back-of-book indexes. The legacy command names also appear in
+% older source downloads. The edition's contents comes from \tableofcontents.
 \newenvironment{originalinhalt}{\par\small\setlength{\parindent}{0pt}%
   \setlength{\parskip}{0.15\baselineskip}}{\par}
 \newcommand{\inhaltsgruppe}[1]{\par\medskip{\centering #1\par}\nopagebreak}

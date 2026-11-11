@@ -93,7 +93,7 @@ def stage_dir(book, build, name):
         target = path / file.relative_to(book)
         target.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy(file, target)
-    for shared in ("oll.cfg", *CLASS_FILES):
+    for shared in ("oll.cfg", "oll.mk4", *CLASS_FILES):
         shutil.copy(TEX / shared, path / shared)
     if (build / "engraved").exists():
         shutil.copytree(build / "engraved", path, dirs_exist_ok=True)
@@ -134,7 +134,7 @@ def build_pdf(book, build):
 
 def build_html(book, build):
     path = stage_dir(book, build, "html")
-    code, out = run(["make4ht", "-l", "-a", "warning", "-c", "oll.cfg", "-f", "html5+common_domfilters",
+    code, out = run(["make4ht", "-l", "-a", "warning", "-c", "oll.cfg", "-e", "oll.mk4", "-f", "html5+common_domfilters",
                      "-d", "out", f"{JOB}.tex"], path)
     html = path / "out" / f"{JOB}.html"
     if not html.exists():
@@ -147,7 +147,8 @@ def build_html(book, build):
 
 def build_epub(book, build, meta):
     path = stage_dir(book, build, "epub")
-    code, out = run(["tex4ebook", "-l", "-a", "warning", "-c", "oll.cfg", "-f", "epub3", f"{JOB}.tex"], path)
+    code, out = run(["tex4ebook", "-l", "-a", "warning", "-c", "oll.cfg", "-e", "oll.mk4", "-f", "epub3",
+                     f"{JOB}.tex"], path)
     epub = path / f"{JOB}.epub"
     if not epub.exists():
         raise StepFailed("tex4ebook produced no EPUB.\n" + ("\n".join(tex_errors(read_log(path / f"{JOB}.log"))) or out[-3000:]))

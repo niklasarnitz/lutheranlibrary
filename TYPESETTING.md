@@ -95,6 +95,10 @@ TEXINPUTS=../site/tex//: lualatex main.tex
   note, so the note stays out of the running head and the bookmarks:
   `\section[IV. Schone deinen Vorfahr und deinen Nachfolger]{IV. Schone
   deinen Vorfahr und deinen Nachfolger\footnote{…}}`.
+  If a long note crowds the print page, use `\protect\footnotemark` in the
+  heading and `\footnotetext{…}` in the first paragraph below it, where the
+  note can split across pages. Check the note link and pagination in the
+  built editions.
 
 ## 3. Text
 
@@ -138,12 +142,14 @@ TEXINPUTS=../site/tex//: lualatex main.tex
 ## 5. Front matter
 
 - Each printed title page (half-title, title page, a dedication page) is one
-  `titelseite` environment. Inside it, and only there, size commands and
-  vertical space are allowed:
+  `titelseite` environment. Use `\werktitel{…}` for the main title and
+  `\werkuntertitel{…}` for the subtitle or volume designation. The same
+  title command sets the journal name in a masthead. Keep the source lines
+  and use paragraph breaks or `\\` between them:
 
   ```latex
   \begin{titelseite}
-  {\LARGE Der evangelische Geistliche.}\\[1.5em]
+  \werktitel{Der evangelische Geistliche.}\\[1.5em]
   Dem nun folgenden Geschlechte evangelischer Geistlichen dargebracht\\[1.5em]
   von Wilhelm Löhe,\\
   …
@@ -164,6 +170,9 @@ TEXINPUTS=../site/tex//: lualatex main.tex
 - Block quotations: `quote` (one paragraph or several). The source line
   printed under a quotation or motto: `\quelle{1. Cor. 9, 27.}` after
   `\end{quote}`.
+- In a verse-by-verse exposition, use `schriftzitat` for the passages of
+  Scripture set apart as the text under discussion. Use `quote` for other
+  block quotations, including incidental Scripture quotations.
 - Poetry: `verse`; `\\` at the end of every line except the last line of a
   stanza; stanzas are separated by a blank line. Indented lines:
   `\hspace*{1em}` at the start of the line.
@@ -172,9 +181,13 @@ TEXINPUTS=../site/tex//: lualatex main.tex
 
 - `tabular` inside a `center` environment; columns with `l`, `c`, `r` or
   `p{…}`; rules with `\hline`. Several lines in one cell: `\zl{a\\b}`.
-- A table wider than the page: `\begin{sideways}…\end{sideways}` around the
-  `tabular`, on a page of its own. Size commands (`\small`, `\footnotesize`)
-  are allowed inside tables.
+- Wrap a wide register table in `quertabelle`, with its source marker and
+  any accompanying captions inside the environment. The class handles the
+  rotated print page. The reader and EPUB display the table upright.
+- For a comparison across four equal-width text columns and a narrow item
+  number column, use `vergleichstabelle`. It supplies a compact
+  `longtable` that can continue across pages. Size commands
+  (`\small`, `\footnotesize`) are allowed inside tables.
 
 ### Musical notation
 
@@ -204,7 +217,7 @@ by hand, first engrave its `.ly` files with LilyPond (for example,
 ## 8. What not to do
 
 - No `\section*`, `\chapter*` and no headings made from `center` + `\Large`.
-- No `\clearpage` / `\newpage` except to end a `sideways` table page.
+- Let the class manage page breaks for headings, title pages, and wide tables.
 - No `\\` to end paragraphs, no `\noindent`, `\medskip`, `\hfill`,
   `\dotfill` in running text.
 - No colours, fonts, sizes, `\usepackage` or macro definitions in a book.

@@ -1,0 +1,28 @@
+-- Keep readable heading aliases for existing links, and use the original
+-- TeX4ht anchors for generated links. The sectionid filter can give "11."
+-- and a repeated "1" the same alias when it appends a numeric suffix.
+local module = "domfilters.make4ht-sectionid"
+local available, sectionid = pcall(require, module)
+if available then
+  package.loaded[module] = function(dom, parameters)
+    local native_ids = {}
+    for _, element in ipairs(dom:query_selector("[id]")) do
+      native_ids[element:get_attribute("id")] = true
+    end
+
+    local options = parameters.tex4ht_sty_par
+    parameters.tex4ht_sty_par = options .. ",notoc"
+    dom = sectionid(dom, parameters)
+    parameters.tex4ht_sty_par = options
+
+    local aliases = {}
+    for _, element in ipairs(dom:query_selector("[id]")) do
+      local id = element:get_attribute("id")
+      if not native_ids[id] then
+        if aliases[id] then element:set_attribute("id", nil) end
+        aliases[id] = true
+      end
+    end
+    return dom
+  end
+end

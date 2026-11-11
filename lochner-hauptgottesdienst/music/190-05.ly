@@ -13,6 +13,7 @@
     \new Voice { \voiceTwo \cadenzaOn
       d'2 fis'2 g'2 e'2( fis'2) g'1 fis'1 }
    >>
+  \new Lyrics \lyricsto "soprano" { Und mit dei -- nem Gei -- ste. }
    \new Staff <<
     \new Voice { \voiceOne \clef bass \key g \major \cadenzaOn
       b2 d'2 <g d'>2 b2( d'2) d'1 d'1 \bar "|." }
@@ -20,7 +21,6 @@
       g2 d2 g,2 e2( d2) g,1 d1 }
    >>
   >>
-  \new Lyrics \lyricsto "soprano" { Und mit dei -- nem Gei -- ste. }
  >>
  \layout { ragged-right = ##f \context { \Lyrics \override LyricText.font-size = #-3 } \context { \Score \remove "Bar_number_engraver" } \context { \Staff \remove "Time_signature_engraver" } }
 }

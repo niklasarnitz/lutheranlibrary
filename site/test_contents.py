@@ -8,6 +8,7 @@ from pathlib import Path
 
 import lxml.html
 
+from reader import reader_html
 from typeset import typeset
 
 
@@ -26,32 +27,41 @@ class ContentsTests(unittest.TestCase):
                 r"\chapter{Opening}Opening text."
                 r"\setcounter{page}{1000}"
                 + "".join(rf"\section{{Topic {n}}}Section text." for n in range(1, 22))
-                + r"\end{document}")
+                + r"\section{11.}First.\section{1}Second.\section{1}Third.\end{document}")
             result = typeset(book, root / "build", {"title": "Contents destinations"})
             self.assertEqual(result["warnings"], [])
             # Four-digit contents page numbers must fit their PDF boxes too.
             self.assertNotIn("Overfull \\hbox", (root / "build/pdf/main.log").read_text())
             self.check_destinations(result["html"].read_bytes())
+            markup, _ = reader_html(result["html"].read_text())
+            self.check_destinations(markup)
             with zipfile.ZipFile(result["epub"]) as archive:
                 documents = {name: lxml.html.fromstring(archive.read(name))
                              for name in archive.namelist() if name.endswith(".xhtml")}
                 links = [(name, link) for name, doc in documents.items()
                          for link in doc.cssselect("nav a")]
-                self.assertEqual(len(links), 22)
+                self.assertEqual(len(links), 25)
+                self.assertEqual(len({(name, link.get("href")) for name, link in links}), 25)
                 for name, link in links:
                     file, anchor = link.get("href").split("#")
                     target = posixpath.normpath(posixpath.join(posixpath.dirname(name), file))
                     matches = documents[target].xpath('//*[@id=$id]', id=anchor)
                     self.assertEqual(len(matches), 1, link.text_content())
-                    self.assertEqual(" ".join(matches[0].text_content().split()),
+                    self.assertEqual(self.destination_title(matches[0]),
                                      " ".join(link.text_content().split()))
+
+    def destination_title(self, destination):
+        heading = destination.getparent() if destination.tag == "a" else destination
+        return " ".join(heading.text_content().split())
 
     def check_destinations(self, markup):
         document = lxml.html.fromstring(markup)
+        self.assertLessEqual(len(document.xpath('//*[@id="x11"]')), 1)
         links = document.cssselect(".chapterToc a, .sectionToc a")
-        self.assertEqual(len(links), 22)
+        self.assertEqual(len(links), 25)
+        self.assertEqual(len({link.get("href") for link in links}), 25)
         for link in links:
             target = link.get("href").split("#")[-1]
             matches = document.xpath('//*[@id=$id]', id=target)
             self.assertEqual(len(matches), 1, link.text_content())
-            self.assertEqual(" ".join(matches[0].text_content().split()), link.text_content().strip())
+            self.assertEqual(self.destination_title(matches[0]), link.text_content().strip())

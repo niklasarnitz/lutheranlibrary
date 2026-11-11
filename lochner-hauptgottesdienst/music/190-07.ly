@@ -12,6 +12,8 @@
     \new Voice { \voiceTwo \cadenzaOn
       d'2 d'2 d'2 d'2 d'1( b1) }
    >>
+  \new Lyrics \lyricsto "soprano" { \set ignoreMelismata = ##t Eh -- re sei dir, HErr -- re. }
+    \new Lyrics \lyricsto "soprano" { \set ignoreMelismata = ##t \repeat unfold 4 { \skip 1 } "(HErr.)" }
    \new Staff <<
     \new Voice { \voiceOne \clef bass \key g \major \cadenzaOn
       g2 g2 g2 \bar "|" fis2 fis1( d1) \bar "|." }
@@ -19,8 +21,6 @@
       g,2 g,2 g,2 d2 d1( g,1) }
    >>
   >>
-  \new Lyrics \lyricsto "soprano" { \set ignoreMelismata = ##t Eh -- re sei dir, HErr -- re. }
-    \new Lyrics \lyricsto "soprano" { \set ignoreMelismata = ##t \repeat unfold 4 { \skip 1 } "(HErr.)" }
  >>
  \layout { ragged-right = ##f \context { \Lyrics \override LyricText.font-size = #-3 } \context { \Score \remove "Bar_number_engraver" } \context { \Staff \remove "Time_signature_engraver" } }
 }
