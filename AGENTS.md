@@ -3,6 +3,10 @@
 - **Before any work in this checkout, read [FOLIO.local.md](FOLIO.local.md).**
   This read-first pointer is local-only: keep it uncommitted when staging other
   changes. The runbook covers Folio access, retrieval and scan-based Nacharbeit.
+- For Folio imports, transcription, scan-based OCR correction, or apparatus
+  extraction, load [orchestrating-folio-editions](.agents/skills/orchestrating-folio-editions/SKILL.md).
+  Delegate page-level work to GPT-6 Luna workers; the lead orchestrates,
+  independently reviews evidence, integrates results, and validates the edition.
 - Before transcribing, correcting OCR, or changing a book's LaTeX, read
   [TYPESETTING.md](TYPESETTING.md). It is the source of truth for transcription
   fidelity, structural markup, notes, source-page markers, and typesetting.
