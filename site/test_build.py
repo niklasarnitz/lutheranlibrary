@@ -1,17 +1,19 @@
 """Tests for the static build: python3 -m unittest discover site"""
 import json
+import io
 import posixpath
 import shutil
 import tempfile
 import unittest
 import zipfile
+from contextlib import redirect_stdout
 from pathlib import Path
 
 import lxml.html
 
 import build
 from reader import reader_html
-from typeset import set_opf_metadata, typeset
+from typeset import engrave_music, set_opf_metadata, typeset
 
 # Shaped like real make4ht output (html5, fn-in) for a German source with \quellseite markers.
 TEX4HT_HTML = """<!DOCTYPE html><html lang='de'><head><title></title></head><body>
@@ -268,6 +270,8 @@ class BookTests(unittest.TestCase):
         before = build.book_hash(book)
         (path / "main.pdf").write_bytes(b"%PDF")
         (path / "main.aux").write_text("x")
+        self.assertEqual(build.book_hash(book), before)
+        (path / "REVIEW.md").write_text("Editorial review notes.")
         self.assertEqual(build.book_hash(book), before)
         (path / "body.tex").write_text("Changed.", "utf-8")
         self.assertNotEqual(build.book_hash(book), before)
@@ -541,6 +545,41 @@ class BookTests(unittest.TestCase):
 
 
 class TypesetTests(unittest.TestCase):
+    @unittest.skipUnless(shutil.which("lilypond"), "LilyPond is not installed")
+    def test_music_cache_reuses_scores_and_tracks_changed_includes(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            book = root / "book"
+            book.mkdir()
+            header = '\\version "2.24.3"\n\\header { tagline = ##f }\n'
+            (book / "a.ly").write_text(header + '\\include "notes.ily"\n\\score { \\notes }\n')
+            (book / "notes.ily").write_text("notes = { c'1 }\n")
+            (book / "b.ly").write_text(header + "\\score { { d'2 e'2 } }\n")
+
+            def engrave(name, expected):
+                output = root / name
+                log = io.StringIO()
+                with redirect_stdout(log):
+                    engrave_music(book, output, cache=root / "cache")
+                self.assertIn(expected, log.getvalue())
+                return output
+
+            cold = engrave("cold", "2 built, 0 cached")
+            (book / "body.tex").write_text("Changed prose only.")
+            warm = engrave("warm", "0 built, 2 cached")
+            for name in ("a", "b"):
+                for suffix in (".pdf", ".svg"):
+                    self.assertEqual((cold / f"{name}{suffix}").read_bytes(),
+                                     (warm / f"{name}{suffix}").read_bytes())
+            (book / "notes.ily").write_text("notes = { g''2 a''2 }\n")
+            changed = engrave("changed", "1 built, 1 cached")
+            self.assertNotEqual((changed / "a.svg").read_bytes(), (warm / "a.svg").read_bytes())
+            self.assertEqual((changed / "b.svg").read_bytes(), (warm / "b.svg").read_bytes())
+            (book / "c.ly").write_text(header + "\\score { { f'4 g'4 a'2 } }\n")
+            (book / "b.ly").unlink()
+            added = engrave("added", "1 built, 1 cached")
+            self.assertEqual(sorted(p.name for p in added.glob("*.svg")), ["a.svg", "c.svg"])
+
     @unittest.skipUnless(all(shutil.which(cmd) for cmd in ("lualatex", "make4ht", "tex4ebook")),
                          "TeX build tools are not installed")
     def test_sideways_registers_stay_upright_and_complete_in_digital_editions(self):

@@ -239,6 +239,8 @@ def book_hash(book):
     for file in PIPELINE_FILES:
         digest.update(file.name.encode() + b"\0" + file.read_bytes() + b"\0")
     for file in source_files(book.path):
+        if file.name == "REVIEW.md":
+            continue  # Editorial notes are included in the source ZIP, not typeset.
         digest.update(file.relative_to(book.path).as_posix().encode() + b"\0" + file.read_bytes() + b"\0")
     if book.installments:
         # Include the assembler and ordered dependencies, not just the serial manifest.
@@ -301,7 +303,7 @@ def edition(book, cache):
     with tempfile.TemporaryDirectory(prefix=f"oll-{book.slug}-") as build:
         meta = {"title": book.full_title, "author": book.author, "language": book.language}
         sources = edition_sources(book, Path(build) / "sources")
-        result = typeset(sources, Path(build), meta)
+        result = typeset(sources, Path(build), meta, music_cache=cache / ".music")
         css = result["css"].read_text("utf-8", "replace") if result["css"].exists() else ""
         html, toc = reader_html(result["html"].read_text("utf-8", "replace"), css)
         fresh = cache / f"{book.slug}.tmp"

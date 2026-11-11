@@ -158,6 +158,20 @@ typeset again. Bump `PIPELINE_VERSION` in `site/build.py` to force a rebuild
 of everything. A book that fails to typeset fails the build; `public/` is only
 replaced after a successful one.
 
+LilyPond scores have a separate, persistent PDF/SVG cache in
+`.cache/books/.music/` (under `--cache` when overridden). A changed book reuses
+unchanged scores; only new or changed `.ly` files and scores whose local
+`\include` dependencies changed are engraved again. The key also includes the
+LilyPond version and `MUSIC_CACHE_VERSION` in `site/typeset.py`; bump the latter
+when changing engraving options or music fonts. Each newly engraved score is
+logged, followed by a built/cached count. Partial or failed scores are not reused.
+
+Changes to site templates, CSS or catalog filtering do not retypeset books.
+`REVIEW.md` changes likewise leave editions cached, but still appear in the
+freshly generated source ZIP. Shared LaTeX/TeX4ht pipeline changes deliberately
+rebuild all affected editions; they do not invalidate the separate score cache.
+The first build after introducing this score cache fills it once.
+
 `docker build -t lutheranlibrary .` runs the tests, typesets in Debian's TeX
 Live (whose TeX4ht output differs from MacTeX's) and serves the result with
 nginx on port 8080 (`/health/` for checks).

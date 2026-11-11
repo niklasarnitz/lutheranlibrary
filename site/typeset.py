@@ -3,11 +3,13 @@
 Each engine runs on its own copy of the book directory, so their auxiliary
 files never mix, and the book directory itself stays untouched.
 """
+import hashlib
 import os
 import re
 import shutil
 import signal
 import subprocess
+import tempfile
 import zipfile
 from pathlib import Path
 from xml.sax.saxutils import escape
@@ -17,6 +19,8 @@ JOB = "main"
 # The library's own LaTeX classes and packages, copied next to every book (see TYPESETTING.md).
 CLASS_FILES = sorted(p.name for p in TEX.iterdir() if p.suffix in {".cls", ".sty"})
 STEP_TIMEOUT = int(os.environ.get("STEP_TIMEOUT", "600"))
+# Bump when engraving options or the music font setup changes.
+MUSIC_CACHE_VERSION = "1"
 # LaTeX output that may lie around in a book directory from compiling it by hand.
 BUILD_LEFTOVERS = {".pdf", ".aux", ".log", ".out", ".toc", ".fls", ".fdb_latexmk", ".gz", ".xdv",
                    ".html", ".css", ".epub", ".4ct", ".4tc", ".dvi", ".idv", ".lg", ".tmp", ".xref"}
@@ -61,9 +65,35 @@ def read_log(path):
     return path.read_text("utf-8", "replace") if path.exists() else ""
 
 
-def engrave_music(book, target):
+def music_hash(source, version):
+    """Track the score and its local LilyPond includes, including nested includes."""
+    digest = hashlib.sha256((MUSIC_CACHE_VERSION + "\0" + version).encode())
+    seen = set()
+
+    def include(path):
+        path = path.resolve()
+        if path in seen:
+            return
+        seen.add(path)
+        data = path.read_bytes()
+        digest.update(data + b"\0")
+        for name in re.findall(r'\\include\s*"([^"\n]+)"', data.decode("utf-8")):
+            dependency = path.parent / name
+            if not dependency.is_file():
+                dependency = source.parent / name
+            # Standard LilyPond includes are covered by the tool version.
+            if dependency.is_file():
+                include(dependency)
+
+    include(source)
+    return digest.hexdigest()
+
+
+def engrave_music(book, target, cache=None):
     """Engrave editable LilyPond sources before TeX; shell escape stays disabled."""
     target.mkdir(parents=True, exist_ok=True)
+    version = None
+    built = reused = 0
     for source in source_files(book):
         if source.suffix.lower() in {".png", ".jpg", ".jpeg"}:
             image = target / source.relative_to(book)
@@ -73,6 +103,18 @@ def engrave_music(book, target):
             continue
         output = target / source.relative_to(book).with_suffix("")
         output.parent.mkdir(parents=True, exist_ok=True)
+        cached = None
+        if cache is not None:
+            if version is None:
+                code, version = run(["lilypond", "--version"], source.parent)
+                if code:
+                    raise StepFailed(f"LilyPond version: {version}")
+            cached = cache / music_hash(source, version)
+            if all((cached / f"score{suffix}").is_file() for suffix in (".pdf", ".svg")):
+                for suffix in (".pdf", ".svg"):
+                    shutil.copy(cached / f"score{suffix}", output.with_suffix(suffix))
+                reused += 1
+                continue
         # Cairo outlines lyrics as well as notes: browser font substitution must
         # not change syllable spacing or clip the last word of a score.
         for options, suffix in ((["--pdf"], ".pdf"), (["-dbackend=cairo", "--svg"], ".svg")):
@@ -83,6 +125,18 @@ def engrave_music(book, target):
             # One image per source keeps the same score intact in all three formats.
             if list(output.parent.glob(f"{output.name}-page*{suffix}")):
                 raise StepFailed(f"{source.name}: split multi-page music into separate score sources")
+        built += 1
+        print(f"{book.name}: music {source.relative_to(book)} built", flush=True)
+        if cached is not None:
+            cached.mkdir(parents=True, exist_ok=True)
+            # Publish only a validated pair; concurrent editions may share a score.
+            with tempfile.TemporaryDirectory(dir=cache) as temporary:
+                for suffix in (".pdf", ".svg"):
+                    fresh = Path(temporary) / f"score{suffix}"
+                    shutil.copy(output.with_suffix(suffix), fresh)
+                    fresh.replace(cached / fresh.name)
+    if built or reused:
+        print(f"{book.name}: music {built} built, {reused} cached", flush=True)
     return target
 
 
@@ -188,11 +242,11 @@ def set_opf_metadata(opf, meta):
     return opf
 
 
-def typeset(book, build, meta):
+def typeset(book, build, meta, music_cache=None):
     """Build PDF, HTML and EPUB of the book directory into build/; returns their paths."""
     stage = "music"
     try:
-        assets = engrave_music(book, build / "engraved")
+        assets = engrave_music(book, build / "engraved", cache=music_cache)
         stage = "pdf"
         pdf, pages, warnings = build_pdf(book, build)
         stage = "html"
