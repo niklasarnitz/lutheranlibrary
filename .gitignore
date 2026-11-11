@@ -12,3 +12,7 @@ public/
 site/static/fonts/
 __pycache__/
 .venv/
+
+# Local editorial review documents
+REVIEW.md
+/findings/*review*.md
