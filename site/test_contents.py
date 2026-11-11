@@ -24,10 +24,13 @@ class ContentsTests(unittest.TestCase):
             (book / "main.tex").write_text(
                 r"\documentclass{oll-book}\begin{document}\tableofcontents"
                 r"\chapter{Opening}Opening text."
+                r"\setcounter{page}{1000}"
                 + "".join(rf"\section{{Topic {n}}}Section text." for n in range(1, 22))
                 + r"\end{document}")
             result = typeset(book, root / "build", {"title": "Contents destinations"})
             self.assertEqual(result["warnings"], [])
+            # Four-digit contents page numbers must fit their PDF boxes too.
+            self.assertNotIn("Overfull \\hbox", (root / "build/pdf/main.log").read_text())
             self.check_destinations(result["html"].read_bytes())
             with zipfile.ZipFile(result["epub"]) as archive:
                 documents = {name: lxml.html.fromstring(archive.read(name))

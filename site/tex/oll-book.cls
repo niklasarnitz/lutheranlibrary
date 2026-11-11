@@ -74,6 +74,9 @@
 \setcounter{secnumdepth}{-2}
 \setcounter{tocdepth}{2}
 \ifoll@pdf
+  % Long editions need room for four-digit page numbers in the contents.
+  \renewcommand{\@pnumwidth}{2.5em}
+  \renewcommand{\@tocrmarg}{3.5em}
   \RequirePackage{titlesec}
   \titleformat{\part}[display]{\centering\normalfont\LARGE}{}{0pt}{}
   \titlespacing*{\part}{0pt}{0.3\textheight}{0pt}
