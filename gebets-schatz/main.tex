@@ -17,6 +17,18 @@
 % rights: "Gemeinfrei (Public Domain): Ausgabe von 1881; historische Gebete und Kirchenlieder."
 % ---
 \documentclass{oll-book}
+
+\newcommand{\hauslied}[2][]{%
+  \par\addvspace{.65\baselineskip}%
+  \noindent\phantomsection\label{gs:hymn:#2}%
+  \textbf{Lied~#2}%
+  \if\relax\detokenize{#1}\relax\else\footnote{#1}\fi
+  \par\nobreak}
+\newcommand{\liedweise}[1]{\noindent\emph{#1}\par\nobreak}
+\newcommand{\liedstrophe}[1]{%
+  \par\addvspace{.25\baselineskip}%
+  \noindent\textbf{Strophe~#1}\enspace\ignorespaces}
+
 \begin{document}
 \input{body}
 \end{document}
