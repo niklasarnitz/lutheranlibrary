@@ -68,11 +68,38 @@
 \setlength{\parindent}{1.2em}
 
 % ---------------------------------------------------------------- headings
-% Headings are unnumbered: the book's own numbering ("I.", "§. 12", "A.") is
-% part of the title text. They still reach the bookmarks and the reader's
-% table of contents, so use the unstarred commands.
+% Use unstarred headings for bookmarks and contents. Sequential chapter
+% numbering can be enabled for a division with numberedchapters.
 \setcounter{secnumdepth}{-2}
 \setcounter{tocdepth}{2}
+\newcounter{oll@chapterseries}
+\newif\ifoll@numberedcontents
+\newcommand{\oll@widenchaptercontents}{%
+  \ifoll@numberedcontents\else
+    \global\oll@numberedcontentstrue
+    \let\oll@chaptercontents\l@chapter
+    \renewcommand{\l@chapter}[2]{%
+      \begingroup
+      \let\oll@numberline\numberline
+      \renewcommand{\numberline}[1]{%
+        \setlength\@tempdima{2.8em}\oll@numberline{####1}}%
+      \oll@chaptercontents{##1}{##2}%
+      \endgroup}%
+  \fi}%
+
+\newenvironment{numberedchapters}{%
+  \stepcounter{oll@chapterseries}%
+  \ifoll@pdf
+    \ifnum\value{oll@chapterseries}=1
+      \addtocontents{toc}{\protect\oll@widenchaptercontents}%
+    \fi
+  \fi
+  \setcounter{chapter}{0}%
+  \c@secnumdepth=0\relax
+  \renewcommand{\thechapter}{\Roman{chapter}.}%
+  \def\theHchapter{\arabic{oll@chapterseries}.\arabic{chapter}}%
+}{}
+
 \ifoll@pdf
   % Long editions need room for four-digit page numbers in the contents.
   \renewcommand{\@pnumwidth}{2.5em}
@@ -80,7 +107,7 @@
   \RequirePackage{titlesec}
   \titleformat{\part}[display]{\centering\normalfont\LARGE}{}{0pt}{}
   \titlespacing*{\part}{0pt}{0.3\textheight}{0pt}
-  \titleformat{\chapter}[display]{\centering\normalfont\Large}{}{0pt}{}
+  \titleformat{\chapter}[display]{\centering\normalfont\Large}{\thechapter}{0pt}{}
   \titlespacing*{\chapter}{0pt}{2\baselineskip}{2\baselineskip}
   \titleformat{\section}{\centering\normalfont\large}{}{0pt}{}
   \titlespacing*{\section}{0pt}{1.6\baselineskip plus .5\baselineskip}{0.8\baselineskip}

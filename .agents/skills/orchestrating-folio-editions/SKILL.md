@@ -88,7 +88,10 @@ missing text; preserve source markers at the proper boundaries.
 
 Use the printed Inhaltsverzeichnis to check the order and nesting of headings
 in the retained text. Preserve that structure with unstarred LaTeX headings
-and use a single `\tableofcontents` as the edition's contents list. Omit the
+and use a single `\tableofcontents` as the edition's contents list. Use
+`numberedchapters` for sequential Roman chapter numbering and put only the
+title in `\chapter` and its optional short form. Check the generated
+numerals against the printed sequence. Omit the
 printed list and its old page numbers from the transcription. Record omitted
 scan ranges in the edition's `source` metadata and account for them in the
 worker manifest. On mixed pages, retain the surrounding text and its source

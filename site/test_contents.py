@@ -15,6 +15,41 @@ from typeset import typeset
 class ContentsTests(unittest.TestCase):
     @unittest.skipUnless(all(shutil.which(cmd) for cmd in ("lualatex", "make4ht", "tex4ebook")),
                          "TeX build tools are not installed")
+    def test_numbered_chapter_divisions_restart_and_keep_distinct_destinations(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            book = root / "book"
+            book.mkdir()
+            (book / "main.tex").write_text(
+                r"\documentclass{oll-book}\begin{document}\tableofcontents"
+                r"\begin{numberedchapters}\chapter{Prayers}Prayer text."
+                r"\chapter{Thanksgiving}Thanksgiving text.\end{numberedchapters}"
+                r"\chapter{Index}Index text."
+                r"\begin{numberedchapters}\chapter{Hymns}Hymn text."
+                r"\end{numberedchapters}\end{document}")
+            result = typeset(book, root / "build", {"title": "Numbered chapter divisions"})
+            self.assertEqual(result["warnings"], [])
+
+            print_contents = (root / "build/pdf/main.toc").read_text()
+            self.assertIn(r"\numberline {I.}Prayers", print_contents)
+            self.assertIn(r"\numberline {II.}Thanksgiving", print_contents)
+            self.assertIn(r"\contentsline {chapter}{Index}", print_contents)
+            self.assertIn(r"\numberline {I.}Hymns", print_contents)
+            self.assertIn("{chapter.1.1}", print_contents)
+            self.assertIn("{chapter.2.1}", print_contents)
+
+            markup, _ = reader_html(result["html"].read_text())
+            document = lxml.html.fromstring(markup)
+            entries = document.cssselect(".chapterToc")
+            self.assertEqual([" ".join(entry.text_content().split()) for entry in entries],
+                             ["I. Prayers", "II. Thanksgiving", "Index", "I. Hymns"])
+            links = [entry.cssselect("a")[0].get("href") for entry in entries]
+            self.assertEqual(len(set(links)), 4)
+            for link in links:
+                self.assertEqual(len(document.xpath('//*[@id=$id]', id=link[1:])), 1)
+
+    @unittest.skipUnless(all(shutil.which(cmd) for cmd in ("lualatex", "make4ht", "tex4ebook")),
+                         "TeX build tools are not installed")
     def test_unnumbered_chapter_and_later_sections_have_distinct_destinations(self):
         # The second heading's address plus an inert chapter counter (2000 + 0)
         # used to collide with the twentieth heading's address (20000).

@@ -55,17 +55,25 @@ TEXINPUTS=../site/tex//: lualatex main.tex
 \tableofcontents            % the edition's authoritative contents
 \mainmatter                  % arabic page numbers from 1
 \part{Der evangelische Geistliche}      % a division title page of the original
-\chapter{A. Einleitendes}
+\begin{numberedchapters}      % Roman chapter sequence starting at I.
+\chapter{Einleitendes}
 \section{I. Die Candidatenjahre}
 \subsection{Examen}
 \subsubsection{Anmerkung}    % run-in heading, rarely needed
 …
+\end{numberedchapters}
 \part{Anhang}
 ```
 
-- Use the **unstarred** commands. The class suppresses LaTeX's numbering;
-  the original's numbering (`A.`, `I.`, `§. 12`, `36.`) is written into the
-  title. Unstarred headings reach the PDF bookmarks and the reader's contents.
+- Use the **unstarred** commands so headings reach the PDF bookmarks and the
+  reader's contents. For a sequence of Roman-numbered chapters, wrap the
+  division in `numberedchapters` and give each `\chapter` only its title,
+  including its optional short form. LaTeX starts each sequence at I. and
+  supplies the numerals in the headings and generated contents. Put
+  unnumbered chapters, such as indexes, outside the environment.
+- Preserve printed identifiers for sections and lower levels as part of their
+  titles. When migrating an older chapter sequence with typed-in numerals,
+  verify that the generated sequence matches the print.
 - Include `\tableofcontents` once, near the beginning of every edition. It
   generates linked entries and the edition's actual page numbers from the
   structural headings, down to `\subsection`; compile repeatedly until those
